@@ -9,7 +9,7 @@ class PPNavigationBar extends StatelessWidget {
     final mediaQuery = MediaQuery.of(context);
     return Material(
       borderRadius: BorderRadius.circular(80),
-      elevation: 12,
+      elevation: 4,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(80),
@@ -77,7 +77,7 @@ class PPNavigationBar extends StatelessWidget {
 
 class _Indicator extends StatelessWidget {
   final AlignmentGeometry alignment;
-  const _Indicator({super.key, required this.alignment});
+  const _Indicator({required this.alignment});
 
   @override
   Widget build(BuildContext context) {
@@ -105,12 +105,11 @@ class _Tile extends StatefulWidget {
   final void Function()? onTap;
 
   const _Tile({
-    Key? key,
     this.active = false,
     required this.icon,
     this.label,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   _TileState createState() => _TileState();
@@ -125,14 +124,9 @@ class _TileState extends State<_Tile> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _containerController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _opacityController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
+    const duration = Duration(milliseconds: 300);
+    _containerController = AnimationController(duration: duration, vsync: this);
+    _opacityController = AnimationController(duration: duration, vsync: this);
 
     _containerAnimation =
         Tween<double>(begin: 1, end: 0).animate(_containerController);

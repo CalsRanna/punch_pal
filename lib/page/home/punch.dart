@@ -36,14 +36,14 @@ class _PunchPageState extends State<PunchPage> {
                 _Avatar(),
               ],
             ),
-            const SizedBox(height: 64),
+            const SizedBox(height: 32),
             const _Time(),
             const Spacer(),
             const _Punch(),
             const Spacer(),
             Consumer(builder: (context, ref, child) {
               final punch = ref.watch(punchNotifierProvider).value;
-              return _Tip(punch: punch);
+              return _Conclusion(punch: punch);
             }),
             const SizedBox(height: 32),
             const SizedBox(height: 80),
@@ -55,61 +55,76 @@ class _PunchPageState extends State<PunchPage> {
   }
 }
 
-class _Tip extends StatelessWidget {
+class _Conclusion extends StatelessWidget {
   final Punch? punch;
-  const _Tip({super.key, this.punch});
+  const _Conclusion({this.punch});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Column(
-          children: [
-            Icon(Icons.update),
-            Text(getStartedAt()),
-            Text('Punch In')
-          ],
+        _Item(
+          icon: const Icon(Icons.update),
+          label: 'Punch In',
+          time: punch?.startedAt,
         ),
-        Column(
-          children: [
-            Icon(Icons.history),
-            Text(getEndedAt()),
-            Text('Punch Out')
-          ],
+        _Item(
+          icon: const Icon(Icons.history),
+          label: 'Punch Out',
+          time: punch?.endedAt,
         ),
-        Column(
-          children: [
-            Icon(Icons.schedule),
-            Text(getDuration()),
-            Text('Total Hours')
-          ],
+        _Item(
+          duration: getDuration(),
+          icon: const Icon(Icons.schedule),
+          label: 'Total Hours',
         ),
       ],
     );
   }
 
-  String getStartedAt() {
-    if (punch?.startedAt == null) return '--:--';
-    final date = DateTime.fromMillisecondsSinceEpoch(punch!.startedAt!);
-    return date.toString().substring(11, 16);
-  }
-
-  String getEndedAt() {
-    if (punch?.endedAt == null) return '--:--';
-    final date = DateTime.fromMillisecondsSinceEpoch(punch!.endedAt!);
-    return date.toString().substring(11, 16);
-  }
-
-  String getDuration() {
-    if (punch?.startedAt == null) return '--:--';
-    final startedAt = DateTime.fromMillisecondsSinceEpoch(punch!.startedAt!);
+  Duration? getDuration() {
+    if (punch?.startedAt == null) return null;
     if (punch?.endedAt == null) {
       final now = DateTime.now();
-      return now.difference(startedAt).toShortString();
+      return now.difference(punch!.startedAt!);
     }
-    final endedAt = DateTime.fromMillisecondsSinceEpoch(punch!.endedAt!);
-    return endedAt.difference(startedAt).toShortString();
+    return punch!.endedAt!.difference(punch!.startedAt!);
+  }
+}
+
+class _Item extends StatelessWidget {
+  final Duration? duration;
+  final Widget icon;
+  final String label;
+  final DateTime? time;
+  const _Item({
+    this.duration,
+    required this.icon,
+    required this.label,
+    this.time,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurface = colorScheme.onSurface;
+    final data = IconThemeData(color: onSurface, size: 44);
+    final style = TextStyle(color: onSurface, fontSize: 14);
+    return Column(
+      children: [
+        IconTheme(data: data, child: icon),
+        const SizedBox(height: 8),
+        Text(formatted(), style: style.copyWith(fontWeight: FontWeight.w600)),
+        Text(label, style: style.copyWith(fontSize: 12)),
+      ],
+    );
+  }
+
+  String formatted() {
+    if (time != null) return time.toString().substring(11, 16);
+    if (duration != null) return duration!.toShortString();
+    return '--:--';
   }
 }
 
@@ -133,11 +148,15 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipOval(
-      child: Container(
+    return Container(
+      decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
-        height: 64,
-        width: 64,
+        shape: BoxShape.circle,
+      ),
+      padding: const EdgeInsets.all(2),
+      child: const CircleAvatar(
+        backgroundImage: AssetImage('asset/image/avatar.png'),
+        radius: 32,
       ),
     );
   }
@@ -154,7 +173,8 @@ class _Punch extends StatelessWidget {
         onTap: () => handleTap(ref),
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.onPrimary),
+            border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
             color: Theme.of(context).colorScheme.surface,
             shape: BoxShape.circle,
           ),
@@ -318,7 +338,7 @@ class _TimeState extends State<_Time> {
 
   String weekday() {
     final day = DateTime.now().weekday;
-    final week = ['Sun', 'Mon', 'Tues', 'Wednes', 'Thurs', 'Fri', 'Satur'];
+    final week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     return '${week[day]}day';
   }
 }

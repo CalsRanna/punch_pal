@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
+import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/schema/isar.dart';
 import 'package:punch_pal/schema/punch.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -9,16 +11,16 @@ part 'punch.g.dart';
 class PunchNotifier extends _$PunchNotifier {
   @override
   Future<Punch> build() async {
-    var punch = await isar.punches.filter().endedAtIsNull().findFirst();
-    if (punch != null) return punch;
-    final today = DateTime.now().toString().substring(0, 10);
-    punch = await isar.punches.filter().dateEqualTo(today).findFirst();
-    return punch ?? Punch();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final punch = await isar.punches.filter().dateEqualTo(today).findFirst();
+    return punch ?? Punch()
+      ..date = today;
   }
 
   Future<void> punchIn() async {
     final punch = await future;
-    punch.startedAt = DateTime.now().millisecondsSinceEpoch;
+    punch.startedAt = DateTime.now();
     isar.writeTxn(() async {
       isar.punches.put(punch);
     });
@@ -27,7 +29,7 @@ class PunchNotifier extends _$PunchNotifier {
 
   Future<void> punchOut() async {
     final punch = await future;
-    punch.endedAt = DateTime.now().millisecondsSinceEpoch;
+    punch.endedAt = DateTime.now();
     isar.writeTxn(() async {
       isar.punches.put(punch);
     });
@@ -47,12 +49,44 @@ class PunchNotifier extends _$PunchNotifier {
 @riverpod
 class PunchesNotifier extends _$PunchesNotifier {
   @override
-  Future<List<Punch>> build(int year, int month, [int? day]) async {
-    if (day != null) {
-      final date = DateTime(year, month, day).toString().substring(0, 10);
-      return await isar.punches.filter().dateEqualTo(date).findAll();
+  Future<List<Punch>> build() async {
+    final calendar = ref.watch(calendarNotifierProvider);
+    if (calendar.day != null) {
+      final date = calendar.date;
+      final punches = await isar.punches.filter().dateEqualTo(date).findAll();
+      if (punches.isNotEmpty) return punches;
+      return [Punch()..date = calendar.date];
     }
-    final date = DateTime(year, month).toString().substring(0, 7);
-    return await isar.punches.filter().dateStartsWith(date).findAll();
+    final start = calendar.date;
+    final end = DateTime(calendar.year, calendar.month + 1, 0);
+    return await isar.punches
+        .filter()
+        .dateBetween(start, end)
+        .sortByDateDesc()
+        .findAll();
+  }
+
+  Future<void> makeUpStartedAt(Punch punch, TimeOfDay time) async {
+    final year = punch.date!.year;
+    final month = punch.date!.month;
+    final day = punch.date!.day;
+    final startedAt = DateTime(year, month, day, time.hour, time.minute);
+    punch.startedAt = startedAt;
+    isar.writeTxn(() async {
+      isar.punches.put(punch);
+    });
+    ref.invalidateSelf();
+  }
+
+  Future<void> makeUpEndedAt(Punch punch, TimeOfDay time) async {
+    final year = punch.date!.year;
+    final month = punch.date!.month;
+    final day = punch.date!.day;
+    final endedAt = DateTime(year, month, day, time.hour, time.minute);
+    punch.endedAt = endedAt;
+    isar.writeTxn(() async {
+      isar.punches.put(punch);
+    });
+    ref.invalidateSelf();
   }
 }

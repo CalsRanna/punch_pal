@@ -20,17 +20,17 @@ const PunchSchema = CollectionSchema(
     r'date': PropertySchema(
       id: 0,
       name: r'date',
-      type: IsarType.string,
+      type: IsarType.dateTime,
     ),
     r'ended_at': PropertySchema(
       id: 1,
       name: r'ended_at',
-      type: IsarType.long,
+      type: IsarType.dateTime,
     ),
     r'started_at': PropertySchema(
       id: 2,
       name: r'started_at',
-      type: IsarType.long,
+      type: IsarType.dateTime,
     )
   },
   estimateSize: _punchEstimateSize,
@@ -53,7 +53,6 @@ int _punchEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.date.length * 3;
   return bytesCount;
 }
 
@@ -63,9 +62,9 @@ void _punchSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.date);
-  writer.writeLong(offsets[1], object.endedAt);
-  writer.writeLong(offsets[2], object.startedAt);
+  writer.writeDateTime(offsets[0], object.date);
+  writer.writeDateTime(offsets[1], object.endedAt);
+  writer.writeDateTime(offsets[2], object.startedAt);
 }
 
 Punch _punchDeserialize(
@@ -75,10 +74,10 @@ Punch _punchDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Punch();
-  object.date = reader.readString(offsets[0]);
-  object.endedAt = reader.readLongOrNull(offsets[1]);
+  object.date = reader.readDateTimeOrNull(offsets[0]);
+  object.endedAt = reader.readDateTimeOrNull(offsets[1]);
   object.id = id;
-  object.startedAt = reader.readLongOrNull(offsets[2]);
+  object.startedAt = reader.readDateTimeOrNull(offsets[2]);
   return object;
 }
 
@@ -90,11 +89,11 @@ P _punchDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 1:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
-      return (reader.readLongOrNull(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -188,55 +187,63 @@ extension PunchQueryWhere on QueryBuilder<Punch, Punch, QWhereClause> {
 }
 
 extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'date',
+      ));
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'date',
+      ));
+    });
+  }
+
   QueryBuilder<Punch, Punch, QAfterFilterCondition> dateEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'date',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> dateGreaterThan(
-    String value, {
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'date',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> dateLessThan(
-    String value, {
+    DateTime? value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'date',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> dateBetween(
-    String lower,
-    String upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -245,73 +252,6 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'date',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'date',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateContains(String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'date',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateMatches(String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'date',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'date',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> dateIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'date',
-        value: '',
       ));
     });
   }
@@ -332,7 +272,8 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Punch, Punch, QAfterFilterCondition> endedAtEqualTo(int? value) {
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> endedAtEqualTo(
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'ended_at',
@@ -342,7 +283,7 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> endedAtGreaterThan(
-    int? value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -355,7 +296,7 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> endedAtLessThan(
-    int? value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -368,8 +309,8 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> endedAtBetween(
-    int? lower,
-    int? upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -469,7 +410,7 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> startedAtEqualTo(
-      int? value) {
+      DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'started_at',
@@ -479,7 +420,7 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> startedAtGreaterThan(
-    int? value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -492,7 +433,7 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> startedAtLessThan(
-    int? value, {
+    DateTime? value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -505,8 +446,8 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
   }
 
   QueryBuilder<Punch, Punch, QAfterFilterCondition> startedAtBetween(
-    int? lower,
-    int? upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -615,10 +556,9 @@ extension PunchQuerySortThenBy on QueryBuilder<Punch, Punch, QSortThenBy> {
 }
 
 extension PunchQueryWhereDistinct on QueryBuilder<Punch, Punch, QDistinct> {
-  QueryBuilder<Punch, Punch, QDistinct> distinctByDate(
-      {bool caseSensitive = true}) {
+  QueryBuilder<Punch, Punch, QDistinct> distinctByDate() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'date', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'date');
     });
   }
 
@@ -642,19 +582,19 @@ extension PunchQueryProperty on QueryBuilder<Punch, Punch, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Punch, String, QQueryOperations> dateProperty() {
+  QueryBuilder<Punch, DateTime?, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
     });
   }
 
-  QueryBuilder<Punch, int?, QQueryOperations> endedAtProperty() {
+  QueryBuilder<Punch, DateTime?, QQueryOperations> endedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ended_at');
     });
   }
 
-  QueryBuilder<Punch, int?, QQueryOperations> startedAtProperty() {
+  QueryBuilder<Punch, DateTime?, QQueryOperations> startedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'started_at');
     });

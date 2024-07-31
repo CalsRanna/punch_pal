@@ -6,9 +6,15 @@ part 'punch.g.dart';
 @Name('punches')
 class Punch {
   Id? id;
-  String date = DateTime.now().toString().substring(0, 10);
+  DateTime? date;
   @Name('started_at')
-  int? startedAt;
+  DateTime? startedAt;
   @Name('ended_at')
-  int? endedAt;
+  DateTime? endedAt;
+
+  Punch copyWith({DateTime? startedAt, DateTime? endedAt}) {
+    return Punch()
+      ..startedAt = startedAt ?? this.startedAt
+      ..endedAt = endedAt ?? this.endedAt;
+  }
 }

@@ -2,7 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:punch_pal/util/calendar.dart';
 
 class PPCalendar extends StatefulWidget {
-  const PPCalendar({super.key});
+  final void Function(DateTime?)? onChanged;
+  final void Function()? onNext;
+  final void Function()? onPrevious;
+  final void Function()? onReset;
+  const PPCalendar({
+    super.key,
+    this.onChanged,
+    this.onNext,
+    this.onPrevious,
+    this.onReset,
+  });
 
   @override
   State<PPCalendar> createState() => _PPCalendarState();
@@ -18,8 +28,8 @@ class _PPCalendarState extends State<PPCalendar> {
       controller: controller,
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).colorScheme.surfaceContainer,
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -46,7 +56,11 @@ class _PPCalendarState extends State<PPCalendar> {
     Widget buildWeek(List<DateTime> week) {
       final children = week.map((date) {
         return Expanded(
-          child: _Day(available: date.month == current.month, date: date),
+          child: _Day(
+            available: date.month == current.month,
+            date: date,
+            onChanged: widget.onChanged,
+          ),
         );
       }).toList();
       return Row(children: children);
@@ -68,18 +82,21 @@ class _PPCalendarState extends State<PPCalendar> {
     setState(() {
       current = DateTime(current.year, current.month + 1, 1);
     });
+    widget.onNext?.call();
   }
 
   void previousMonth() {
     setState(() {
       current = DateTime(current.year, current.month - 1, 1);
     });
+    widget.onPrevious?.call();
   }
 
   void resetMonth() {
     setState(() {
       current = DateTime.now();
     });
+    widget.onReset?.call();
   }
 }
 
@@ -116,9 +133,9 @@ class PPCalendarData extends InheritedWidget {
 
 class _Day extends StatelessWidget {
   final bool available;
-
   final DateTime date;
-  const _Day({this.available = true, required this.date});
+  final void Function(DateTime?)? onChanged;
+  const _Day({this.available = true, required this.date, this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +186,7 @@ class _Day extends StatelessWidget {
     if (!available) return;
     final controller = PPCalendarData.of(context).controller;
     controller.select(date);
+    onChanged?.call(controller.active);
   }
 
   bool isWorkday(DateTime date) {
@@ -273,7 +291,7 @@ class _Title extends StatelessWidget {
   }
 
   String format() {
-    final first = ['Janary', 'February', 'March', 'April'];
+    final first = ['January', 'February', 'March', 'April'];
     final second = ['May', 'June', 'July', 'August'];
     final last = ['September', 'October', 'November', 'December'];
     final months = [...first, ...second, ...last];
