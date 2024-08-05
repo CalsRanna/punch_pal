@@ -118,7 +118,7 @@ class _List extends StatelessWidget {
     List<Widget> children = [];
     for (var i = 0; i < punches.length; i++) {
       children.add(_Tile(punch: punches[i]));
-      children.add(const SizedBox(height: 16));
+      children.add(const SizedBox(height: 8));
       if (i == punches.length - 1) {
         children.add(const SizedBox(height: 80));
         children.add(const PPBottomSpacer());

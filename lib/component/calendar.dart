@@ -144,20 +144,20 @@ class _Day extends StatelessWidget {
       onTap: () => handleTap(context),
       child: ListenableBuilder(
         listenable: PPCalendarData.of(context).controller,
-        builder: (context, child) => Container(
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: getBackgroundColor(context),
-            shape: BoxShape.circle,
-          ),
-          margin: const EdgeInsets.all(4),
-          padding: const EdgeInsets.all(4),
-          child: Column(
-            children: [
-              Text('${date.day}', style: getTextStyle(context)),
-              _Indicator(date: date)
-            ],
-          ),
+        builder: (context, child) => Column(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: getBackgroundColor(context),
+                shape: BoxShape.circle,
+              ),
+              margin: const EdgeInsets.all(4),
+              padding: const EdgeInsets.all(4),
+              child: Text('${date.day}', style: getTextStyle(context)),
+            ),
+            _Indicator(date: date)
+          ],
         ),
       ),
     );

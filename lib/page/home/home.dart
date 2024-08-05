@@ -38,6 +38,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
+    var bottom = mediaQuery.padding.bottom;
+    if (bottom == 0) bottom = 16;
     return Stack(
       children: [
         PageView(
@@ -46,7 +48,7 @@ class _HomePageState extends State<HomePage> {
           children: const [PunchPage(), StatisticPage(), SettingPage()],
         ),
         Positioned(
-          bottom: mediaQuery.padding.bottom,
+          bottom: bottom,
           height: 80,
           left: 16,
           child: PPNavigationBar(controller: navigationController),
