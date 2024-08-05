@@ -209,67 +209,99 @@ class _Tile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: Theme.of(context).colorScheme.surfaceContainer,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          _Date(date: punch.date!),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Consumer(builder: (context, ref, child) {
-                        return _Item(
-                          label: 'Punch In',
-                          onTap: (time) => updateStartedAt(ref, time),
-                          time: punch.startedAt,
-                        );
-                      }),
-                    ),
-                    const _VerticalDivider(),
-                    Expanded(
-                      child: Consumer(builder: (context, ref, child) {
-                        return _Item(
-                          label: 'Punch Out',
-                          onTap: (time) => updateEndedAt(ref, time),
-                          time: punch.endedAt,
-                        );
-                      }),
-                    ),
-                    const _VerticalDivider(),
-                    Expanded(
-                      child: _Item(
-                        duration: getDuration(),
-                        label: 'Total Hours',
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: () => handleLongPress(context),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: Theme.of(context).colorScheme.surfaceContainer,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            _Date(date: punch.date!),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Consumer(builder: (context, ref, child) {
+                          return _Item(
+                            label: 'Punch In',
+                            onTap: (time) => updateStartedAt(ref, time),
+                            time: punch.startedAt,
+                          );
+                        }),
                       ),
-                    ),
-                  ],
-                ),
-                const _HorizontalDivider(),
-                Text(
-                  getText(),
-                  style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.3),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w300,
+                      const _VerticalDivider(),
+                      Expanded(
+                        child: Consumer(builder: (context, ref, child) {
+                          return _Item(
+                            label: 'Punch Out',
+                            onTap: (time) => updateEndedAt(ref, time),
+                            time: punch.endedAt,
+                          );
+                        }),
+                      ),
+                      const _VerticalDivider(),
+                      Expanded(
+                        child: _Item(
+                          duration: getDuration(),
+                          label: 'Total Hours',
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
-          )
-        ],
+                  const _HorizontalDivider(),
+                  Text(
+                    getText(),
+                    style: TextStyle(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.3),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w300,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
+    );
+  }
+
+  void handleLongPress(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete'),
+          content: const Text('Are you sure to delete this punch?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            Consumer(builder: (context, ref, child) {
+              return TextButton(
+                child: const Text('Delete'),
+                onPressed: () {
+                  final notifier = ref.read(punchesNotifierProvider.notifier);
+                  notifier.destroy(punch);
+                  Navigator.pop(context);
+                },
+              );
+            })
+          ],
+        );
+      },
     );
   }
 

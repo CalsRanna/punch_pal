@@ -66,6 +66,13 @@ class PunchesNotifier extends _$PunchesNotifier {
         .findAll();
   }
 
+  Future<void> destroy(Punch punch) async {
+    await isar.writeTxn(() async {
+      await isar.punches.delete(punch.id!);
+    });
+    ref.invalidateSelf();
+  }
+
   Future<void> makeUpStartedAt(Punch punch, TimeOfDay time) async {
     final year = punch.date!.year;
     final month = punch.date!.month;
