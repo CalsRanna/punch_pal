@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:punch_pal/component/calendar.dart';
+import 'package:punch_pal/component/date_time_picker.dart';
 import 'package:punch_pal/component/spacer.dart';
 import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/provider/punch.dart';
@@ -164,7 +165,7 @@ class _Date extends StatelessWidget {
 class _Item extends StatelessWidget {
   final Duration? duration;
   final String label;
-  final void Function(TimeOfDay?)? onTap;
+  final void Function(DateTime?)? onTap;
   final DateTime? time;
   const _Item({this.duration, required this.label, this.onTap, this.time});
 
@@ -192,14 +193,17 @@ class _Item extends StatelessWidget {
   }
 
   void handleTap(BuildContext context) async {
-    final timeOfDay =
-        time == null ? TimeOfDay.now() : TimeOfDay.fromDateTime(time!);
-    final result = await showTimePicker(
-      context: context,
-      initialTime: timeOfDay,
-      initialEntryMode: TimePickerEntryMode.inputOnly,
-    );
-    onTap?.call(result);
+    // final timeOfDay =
+    //     time == null ? TimeOfDay.now() : TimeOfDay.fromDateTime(time!);
+    // final result = await showTimePicker(
+    //   context: context,
+    //   initialTime: timeOfDay,
+    //   initialEntryMode: TimePickerEntryMode.inputOnly,
+    // );
+    // onTap?.call(result);
+    final dateTime = await showDateTimePicker(context, initialDateTime: time);
+    print(dateTime);
+    onTap?.call(dateTime);
   }
 }
 
@@ -305,13 +309,13 @@ class _Tile extends StatelessWidget {
     );
   }
 
-  void updateStartedAt(WidgetRef ref, TimeOfDay? time) {
+  void updateStartedAt(WidgetRef ref, DateTime? time) {
     if (time == null) return;
     final notifier = ref.read(punchesNotifierProvider.notifier);
     notifier.makeUpStartedAt(punch, time);
   }
 
-  void updateEndedAt(WidgetRef ref, TimeOfDay? time) {
+  void updateEndedAt(WidgetRef ref, DateTime? time) {
     if (time == null) return;
     final notifier = ref.read(punchesNotifierProvider.notifier);
     notifier.makeUpEndedAt(punch, time);

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/schema/isar.dart';
@@ -73,24 +72,16 @@ class PunchesNotifier extends _$PunchesNotifier {
     ref.invalidateSelf();
   }
 
-  Future<void> makeUpStartedAt(Punch punch, TimeOfDay time) async {
-    final year = punch.date!.year;
-    final month = punch.date!.month;
-    final day = punch.date!.day;
-    final startedAt = DateTime(year, month, day, time.hour, time.minute);
-    punch.startedAt = startedAt;
+  Future<void> makeUpStartedAt(Punch punch, DateTime time) async {
+    punch.startedAt = time;
     isar.writeTxn(() async {
       isar.punches.put(punch);
     });
     ref.invalidateSelf();
   }
 
-  Future<void> makeUpEndedAt(Punch punch, TimeOfDay time) async {
-    final year = punch.date!.year;
-    final month = punch.date!.month;
-    final day = punch.date!.day;
-    final endedAt = DateTime(year, month, day, time.hour, time.minute);
-    punch.endedAt = endedAt;
+  Future<void> makeUpEndedAt(Punch punch, DateTime time) async {
+    punch.endedAt = time;
     isar.writeTxn(() async {
       isar.punches.put(punch);
     });
