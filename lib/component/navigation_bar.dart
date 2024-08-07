@@ -7,6 +7,8 @@ class PPNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = colorScheme.onPrimaryContainer;
     final mediaQuery = MediaQuery.of(context);
     return Material(
       borderRadius: BorderRadius.circular(80),
@@ -32,7 +34,7 @@ class PPNavigationBar extends StatelessWidget {
                         active: controller.index == 0,
                         icon: HugeIcon(
                           icon: HugeIcons.strokeRoundedHome01,
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: color,
                         ),
                         label: 'Home',
                         onTap: () => handleTap(0),
@@ -44,7 +46,7 @@ class PPNavigationBar extends StatelessWidget {
                         active: controller.index == 1,
                         icon: HugeIcon(
                           icon: HugeIcons.strokeRoundedCalendar03,
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: color,
                         ),
                         label: 'Statistic',
                         onTap: () => handleTap(1),
@@ -56,7 +58,7 @@ class PPNavigationBar extends StatelessWidget {
                         active: controller.index == 2,
                         icon: HugeIcon(
                           icon: HugeIcons.strokeRoundedSettings03,
-                          color: Theme.of(context).colorScheme.onPrimary,
+                          color: color,
                         ),
                         label: 'Setting',
                         onTap: () => handleTap(2),
@@ -98,7 +100,7 @@ class _Indicator extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
+          color: Theme.of(context).colorScheme.inversePrimary,
           borderRadius: BorderRadius.circular(48),
         ),
         height: 80,
@@ -181,7 +183,7 @@ class _TileState extends State<_Tile> with TickerProviderStateMixin {
     final mediaQuery = MediaQuery.of(context);
     final maxWidth = (mediaQuery.size.width - 32 - 32 - 32) / 3 - 32;
     final colorScheme = Theme.of(context).colorScheme;
-    final onPrimary = colorScheme.onPrimary;
+    final color = colorScheme.onPrimaryContainer;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: widget.onTap,
@@ -196,10 +198,7 @@ class _TileState extends State<_Tile> with TickerProviderStateMixin {
               builder: (context, child) {
                 return SizedBox(
                   width: 24 + (_containerAnimation.value * (maxWidth - 24)),
-                  child: IconTheme(
-                    data: IconThemeData(color: onPrimary),
-                    child: widget.icon,
-                  ),
+                  child: widget.icon,
                 );
               },
             ),
@@ -212,7 +211,7 @@ class _TileState extends State<_Tile> with TickerProviderStateMixin {
                     maxLines: 1,
                     overflow: TextOverflow.clip,
                     style: TextStyle(
-                      color: onPrimary.withOpacity(_opacityAnimation.value),
+                      color: color.withOpacity(_opacityAnimation.value),
                       decoration: TextDecoration.none,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

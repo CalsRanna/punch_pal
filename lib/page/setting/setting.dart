@@ -19,7 +19,7 @@ class SettingPage extends StatelessWidget {
             const PPTopSpacer(),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 64.0),
-              child: Avatar(),
+              child: Avatar(size: 128),
             ),
             ListTile(
               leading: HugeIcon(
