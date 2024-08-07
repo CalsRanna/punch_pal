@@ -23,21 +23,27 @@ class SettingPage extends StatelessWidget {
             ),
             ListTile(
               leading: HugeIcon(
+                icon: HugeIcons.strokeRoundedSmile,
+                color: color,
+              ),
+              title: const Text('Weekend'),
+              trailing: const Text('Sat, Sun'),
+            ),
+            ListTile(
+              leading: HugeIcon(
                 icon: HugeIcons.strokeRoundedWorkHistory,
                 color: color,
               ),
-              subtitle: const Text('Include midday reset time in work time'),
               title: const Text('Standard Work Time'),
-              trailing: const Text('9 Hours'),
+              trailing: const Text('7 Hours 45 Minutes'),
             ),
             ListTile(
               leading: HugeIcon(
                 icon: HugeIcons.strokeRoundedRestaurant02,
                 color: color,
               ),
-              subtitle: const Text('After the end time consider over time'),
               title: const Text('Rest Time'),
-              trailing: const Text('18:30 - 19:00'),
+              trailing: const Text('12:20 - 13:35, 18:30 - 19:00'),
             ),
             Consumer(builder: (context, ref, child) {
               final state = ref.watch(settingNotifierProvider);

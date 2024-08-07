@@ -49,7 +49,7 @@ class _Calendar extends StatelessWidget {
             if (punch != null) {
               final deviation = DeviationCalculator().calculate(punch);
               if (deviation < 0) {
-                color = colorScheme.error;
+                color = colorScheme.errorContainer;
               } else {
                 color = colorScheme.primary;
               }
@@ -322,19 +322,15 @@ class _Tile extends StatelessWidget {
   String getText() {
     if (punch.startedAt == null) return '';
     if (punch.endedAt == null) return 'Still working';
+
     final endedAt = punch.endedAt!;
     final difference = endedAt.difference(punch.startedAt!);
     final hours = difference.inMinutes / 60;
     final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
-    var gap = hours - 9;
-    if (endedAt.hour >= 19) {
-      gap -= 0.5;
-    } else if (endedAt.hour >= 18 && endedAt.minute >= 30) {
-      gap -= (endedAt.minute - 30) / 60;
-    }
-    final statusText = gap > 0 ? 'over' : 'under';
-    final gapText = gap.abs().toStringAsFixed(1);
-    return '$totalHoursText, $statusText $gapText hours.';
+    final deviation = DeviationCalculator().calculate(punch);
+    final sign = deviation < 0 ? '-' : '+';
+    final formatted = deviation.abs().toStringAsFixed(1);
+    return '$totalHoursText, deviate $sign $formatted hours.';
   }
 
   void handleLongPress(BuildContext context) {

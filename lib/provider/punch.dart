@@ -25,16 +25,16 @@ class PunchesNotifier extends _$PunchesNotifier {
 
   Future<void> makeUpEndedAt(Punch punch, DateTime time) async {
     punch.endedAt = time;
-    isar.writeTxn(() async {
-      isar.punches.put(punch);
+    await isar.writeTxn(() async {
+      await isar.punches.put(punch);
     });
     ref.invalidateSelf();
   }
 
   Future<void> makeUpStartedAt(Punch punch, DateTime time) async {
     punch.startedAt = time;
-    isar.writeTxn(() async {
-      isar.punches.put(punch);
+    await isar.writeTxn(() async {
+      await isar.punches.put(punch);
     });
     ref.invalidateSelf();
   }
