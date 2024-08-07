@@ -9,7 +9,10 @@ Future<DateTime?> showDateTimePicker(
     backgroundColor: Colors.transparent,
     context: context,
     builder: (context) {
-      return _Dialog(header: header, initialDateTime: initialDateTime);
+      return _ParentData(
+        dateTime: initialDateTime,
+        child: _Dialog(header: header, initialDateTime: initialDateTime),
+      );
     },
   );
 }
@@ -42,19 +45,26 @@ class _Button extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final color = colorScheme.primaryContainer;
+    final primary = colorScheme.primary;
+    final onPrimary = colorScheme.onPrimary;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(48),
-          color: color,
+          color: primary,
         ),
         padding: const EdgeInsets.symmetric(vertical: 16),
         margin: const EdgeInsets.symmetric(horizontal: 16),
-        child: const Center(
-          child: Text('CONFIRM', style: TextStyle(fontWeight: FontWeight.w700)),
+        child: Center(
+          child: Text(
+            'CONFIRM',
+            style: TextStyle(
+              color: onPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );
@@ -69,48 +79,40 @@ class _DateTimePickerController extends ChangeNotifier {
   }
 }
 
-class _Dialog extends StatefulWidget {
+class _Dialog extends StatelessWidget {
   final Widget? header;
   final DateTime? initialDateTime;
   const _Dialog({this.header, this.initialDateTime});
 
-  @override
-  State<_Dialog> createState() => _DialogState();
-}
-
-class _DialogState extends State<_Dialog> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final color = colorScheme.surfaceContainer;
     final mediaQuery = MediaQuery.of(context);
     final bottom = mediaQuery.padding.bottom;
-    return _ParentData(
-      dateTime: widget.initialDateTime,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: color,
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Column(
-              children: [
-                widget.header ?? const DefaultDateTimerPickerHeader(),
-                _Picker(initialDateTime: widget.initialDateTime),
-                const SizedBox(height: 8),
-                Builder(builder: (context) {
-                  return _Button(onTap: () => handleTap(context));
-                })
-              ],
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            color: color,
           ),
-          SizedBox(height: bottom),
-        ],
-      ),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            children: [
+              header ?? const DefaultDateTimerPickerHeader(),
+              const _Picker(),
+              const SizedBox(height: 8),
+              Builder(builder: (context) {
+                return _Button(onTap: () => handleTap(context));
+              })
+            ],
+          ),
+        ),
+        SizedBox(height: bottom),
+      ],
     );
   }
 
@@ -138,8 +140,7 @@ class _ParentData extends InheritedWidget {
 }
 
 class _Picker extends StatelessWidget {
-  final DateTime? initialDateTime;
-  const _Picker({this.initialDateTime});
+  const _Picker();
 
   @override
   Widget build(BuildContext context) {
@@ -151,28 +152,28 @@ class _Picker extends StatelessWidget {
             child: _WheelPicker(
               onChanged: (value) => updateYear(context, value),
               options: getYears(),
-              initValue: getYear(),
+              initValue: getYear(context),
             ),
           ),
           Expanded(
             child: _WheelPicker(
               onChanged: (value) => updateDate(context, value),
               options: getDates(int.parse('2024')),
-              initValue: getDate(),
+              initValue: getDate(context),
             ),
           ),
           Expanded(
             child: _WheelPicker(
               onChanged: (value) => updateHour(context, value),
               options: getHours(),
-              initValue: getHour(),
+              initValue: getHour(context),
             ),
           ),
           Expanded(
             child: _WheelPicker(
               onChanged: (value) => updateMinute(context, value),
               options: getMinutes(),
-              initValue: getMinute(),
+              initValue: getMinute(context),
             ),
           )
         ],
@@ -180,8 +181,10 @@ class _Picker extends StatelessWidget {
     );
   }
 
-  String getDate() {
-    final time = initialDateTime ?? DateTime.now();
+  String getDate(BuildContext context) {
+    final controller = _ParentData.of(context).controller;
+    final initialDateTime = controller.dateTime;
+    final time = initialDateTime;
     final month = time.month.toString().padLeft(2, '0');
     final day = time.day.toString().padLeft(2, '0');
     return '$month/$day';
@@ -199,8 +202,10 @@ class _Picker extends StatelessWidget {
     return dates;
   }
 
-  String getHour() {
-    final time = initialDateTime ?? DateTime.now();
+  String getHour(BuildContext context) {
+    final controller = _ParentData.of(context).controller;
+    final initialDateTime = controller.dateTime;
+    final time = initialDateTime;
     return time.hour.toString().padLeft(2, '0');
   }
 
@@ -208,8 +213,10 @@ class _Picker extends StatelessWidget {
     return List.generate(24, (index) => index.toString().padLeft(2, '0'));
   }
 
-  String getMinute() {
-    final time = initialDateTime ?? DateTime.now();
+  String getMinute(BuildContext context) {
+    final controller = _ParentData.of(context).controller;
+    final initialDateTime = controller.dateTime;
+    final time = initialDateTime;
     return time.minute.toString().padLeft(2, '0');
   }
 
@@ -217,8 +224,10 @@ class _Picker extends StatelessWidget {
     return List.generate(60, (index) => index.toString().padLeft(2, '0'));
   }
 
-  String getYear() {
-    final time = initialDateTime ?? DateTime.now();
+  String getYear(BuildContext context) {
+    final controller = _ParentData.of(context).controller;
+    final initialDateTime = controller.dateTime;
+    final time = initialDateTime;
     return time.year.toString();
   }
 

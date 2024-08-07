@@ -1,8 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/component/avatar.dart';
 import 'package:punch_pal/component/spacer.dart';
@@ -229,9 +231,12 @@ class _Punch extends StatelessWidget {
     });
   }
 
-  void handleTap(WidgetRef ref) {
+  Future<void> handleTap(WidgetRef ref) async {
     final notifier = ref.read(punchNotifierProvider.notifier);
     notifier.punch();
+    final canVibrate = await Haptics.canVibrate();
+    if (!canVibrate) return;
+    await Haptics.vibrate(HapticsType.light);
   }
 }
 
@@ -270,8 +275,9 @@ class _Welcome extends StatelessWidget {
     return Consumer(builder: (context, ref, child) {
       final hours = ref.watch(overTimeProvider).value;
       if (hours == null) return Text('Good $part!');
-      final formatted = hours.toStringAsFixed(1);
-      final text = 'Your deviation is $formatted hours.';
+      final sign = hours < 0 ? '-' : '+';
+      final formatted = hours.abs().toStringAsFixed(1);
+      final text = 'Your deviation is $sign$formatted hours.';
       return Text('Good $part! $text');
     });
   }

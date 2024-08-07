@@ -3,12 +3,14 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/util/calendar.dart';
 
 class PPCalendar extends StatefulWidget {
+  final Widget Function(DateTime datetime) indicatorBuilder;
   final void Function(DateTime?)? onChanged;
   final void Function()? onNext;
   final void Function()? onPrevious;
   final void Function()? onReset;
   const PPCalendar({
     super.key,
+    required this.indicatorBuilder,
     this.onChanged,
     this.onNext,
     this.onPrevious,
@@ -25,7 +27,7 @@ class _PPCalendarState extends State<PPCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    return PPCalendarData(
+    return _CalendarData(
       controller: controller,
       child: Container(
         decoration: BoxDecoration(
@@ -56,10 +58,12 @@ class _PPCalendarState extends State<PPCalendar> {
     final weeks = generator.generateWeeks(calendar);
     Widget buildWeek(List<DateTime> week) {
       final children = week.map((date) {
+        final available = date.month == current.month;
         return Expanded(
           child: _Day(
-            available: date.month == current.month,
+            available: available,
             date: date,
+            indicator: widget.indicatorBuilder(date),
             onChanged: widget.onChanged,
           ),
         );
@@ -114,29 +118,45 @@ class PPCalendarController extends ChangeNotifier {
   }
 }
 
-class PPCalendarData extends InheritedWidget {
-  final PPCalendarController controller;
-  const PPCalendarData({
-    super.key,
-    required super.child,
-    required this.controller,
-  });
+class PPCalendarIndicator extends StatelessWidget {
+  final Color color;
+  const PPCalendarIndicator(this.color, {super.key});
 
   @override
-  bool updateShouldNotify(covariant PPCalendarData oldWidget) {
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      height: 4,
+      width: 4,
+    );
+  }
+}
+
+class _CalendarData extends InheritedWidget {
+  final PPCalendarController controller;
+  const _CalendarData({required super.child, required this.controller});
+
+  @override
+  bool updateShouldNotify(covariant _CalendarData oldWidget) {
     return controller != oldWidget.controller;
   }
 
-  static PPCalendarData of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<PPCalendarData>()!;
+  static _CalendarData of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_CalendarData>()!;
   }
 }
 
 class _Day extends StatelessWidget {
   final bool available;
   final DateTime date;
+  final Widget indicator;
   final void Function(DateTime?)? onChanged;
-  const _Day({this.available = true, required this.date, this.onChanged});
+  const _Day({
+    this.available = true,
+    required this.date,
+    required this.indicator,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +164,7 @@ class _Day extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () => handleTap(context),
       child: ListenableBuilder(
-        listenable: PPCalendarData.of(context).controller,
+        listenable: _CalendarData.of(context).controller,
         builder: (context, child) => Column(
           children: [
             Container(
@@ -157,7 +177,7 @@ class _Day extends StatelessWidget {
               padding: const EdgeInsets.all(4),
               child: Text('${date.day}', style: getTextStyle(context)),
             ),
-            _Indicator(date: date)
+            indicator
           ],
         ),
       ),
@@ -167,7 +187,7 @@ class _Day extends StatelessWidget {
   Color? getBackgroundColor(BuildContext context) {
     if (!available) return null;
     final colorScheme = Theme.of(context).colorScheme;
-    final controller = PPCalendarData.of(context).controller;
+    final controller = _CalendarData.of(context).controller;
     if (controller.active == date) return colorScheme.primaryContainer;
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -185,7 +205,7 @@ class _Day extends StatelessWidget {
 
   void handleTap(BuildContext context) {
     if (!available) return;
-    final controller = PPCalendarData.of(context).controller;
+    final controller = _CalendarData.of(context).controller;
     controller.select(date);
     onChanged?.call(controller.active);
   }
@@ -211,20 +231,6 @@ class _Header extends StatelessWidget {
       );
     }).toList();
     return Row(children: children);
-  }
-}
-
-class _Indicator extends StatelessWidget {
-  final DateTime date;
-  const _Indicator({required this.date});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(shape: BoxShape.circle),
-      height: 4,
-      width: 4,
-    );
   }
 }
 

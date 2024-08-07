@@ -7,8 +7,8 @@ import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
 import 'package:punch_pal/util/datetime.dart';
-import 'package:punch_pal/util/duration.dart';
 import 'package:punch_pal/util/deviation.dart';
+import 'package:punch_pal/util/duration.dart';
 
 class StatisticPage extends StatelessWidget {
   const StatisticPage({super.key});
@@ -38,8 +38,25 @@ class _Calendar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer(builder: (context, ref, child) {
+      final punches = ref.watch(punchesNotifierProvider).value;
       return PPCalendar(
+        indicatorBuilder: (datetime) {
+          var color = Colors.transparent;
+          if (punches != null) {
+            final punch = punches.where((p) => p.date == datetime).firstOrNull;
+            if (punch != null) {
+              final deviation = DeviationCalculator().calculate(punch);
+              if (deviation < 0) {
+                color = colorScheme.error;
+              } else {
+                color = colorScheme.primary;
+              }
+            }
+          }
+          return PPCalendarIndicator(color);
+        },
         onChanged: (value) => handleChanged(ref, value),
         onNext: () => handleNext(ref),
         onPrevious: () => handlePrevious(ref),
@@ -69,6 +86,114 @@ class _Calendar extends StatelessWidget {
   }
 }
 
+class _Date extends StatelessWidget {
+  final DateTime date;
+  const _Date({required this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final primary = colorScheme.primaryContainer;
+    final onPrimary = colorScheme.onPrimaryContainer;
+    final error = colorScheme.errorContainer;
+    final onError = colorScheme.onErrorContainer;
+    return Consumer(builder: (context, ref, child) {
+      final punches = ref.watch(punchesNotifierProvider).value;
+      if (punches == null) return const SizedBox();
+      final punch = punches.where((p) => p.date == date).first;
+      var backgroundColor = primary;
+      var textColor = onPrimary;
+      if (DeviationCalculator().calculate(punch) < 0) {
+        backgroundColor = error;
+        textColor = onError;
+      }
+      final style = TextStyle(color: textColor);
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: backgroundColor,
+        ),
+        height: 64,
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${date.day}',
+              style: style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+            ),
+            Text(
+              date.formattedWeekday(3),
+              style: style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _HorizontalDivider extends StatelessWidget {
+  const _HorizontalDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Divider(height: 16, thickness: 0.25);
+  }
+}
+
+class _Item extends StatelessWidget {
+  final Duration? duration;
+  final String label;
+  final void Function(DateTime?)? onTap;
+  final DateTime? time;
+  const _Item({this.duration, required this.label, this.onTap, this.time});
+
+  @override
+  Widget build(BuildContext context) {
+    String text = '--:--';
+    if (time != null) text = time.toString().substring(11, 16);
+    if (duration != null) text = duration!.toShortString();
+    return Consumer(builder: (context, ref, child) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => handleTap(context, ref),
+        child: Column(
+          children: [
+            Text(
+              text,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  void handleTap(BuildContext context, WidgetRef ref) async {
+    if (onTap == null) return;
+    final initialDateTime = _calculateInitialDateTime(ref);
+    final dateTime = await showDateTimePicker(
+      context,
+      initialDateTime: initialDateTime,
+    );
+    if (dateTime == null) return;
+    onTap?.call(dateTime);
+  }
+
+  DateTime? _calculateInitialDateTime(WidgetRef ref) {
+    if (time != null) return time;
+    final now = DateTime.now();
+    final calendar = ref.read(calendarNotifierProvider);
+    if (calendar.day == null) return now;
+    return calendar.date.add(Duration(hours: now.hour, minutes: now.minute));
+  }
+}
+
 class _List extends StatelessWidget {
   const _List();
 
@@ -92,10 +217,11 @@ class _List extends StatelessWidget {
     List<Widget> children = [];
     if (punches.length > 1) {
       final deviation = DeviationCalculator().sum(punches);
-      final formatted = deviation.toStringAsFixed(1);
+      final sign = deviation < 0 ? '-' : '+';
+      final formatted = deviation.abs().toStringAsFixed(1);
       children.add(
         Text(
-          'Deviation: $formatted hours',
+          'Deviation: $sign$formatted hours'.toUpperCase(),
           style: const TextStyle(fontSize: 10),
         ),
       );
@@ -110,76 +236,6 @@ class _List extends StatelessWidget {
       }
     }
     return children;
-  }
-}
-
-class _Date extends StatelessWidget {
-  final DateTime date;
-  const _Date({required this.date});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final onPrimary = colorScheme.onPrimary;
-    final style = TextStyle(color: onPrimary);
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: Theme.of(context).colorScheme.primary,
-      ),
-      height: 64,
-      width: 64,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '${date.day}',
-            style: style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
-          ),
-          Text(
-            date.formattedWeekday(3),
-            style: style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Item extends StatelessWidget {
-  final Duration? duration;
-  final String label;
-  final void Function(DateTime?)? onTap;
-  final DateTime? time;
-  const _Item({this.duration, required this.label, this.onTap, this.time});
-
-  @override
-  Widget build(BuildContext context) {
-    String text = '--:--';
-    if (time != null) text = time.toString().substring(11, 16);
-    if (duration != null) text = duration!.toShortString();
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () => handleTap(context),
-      child: Column(
-        children: [
-          Text(
-            text,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void handleTap(BuildContext context) async {
-    if (onTap == null) return;
-    final dateTime = await showDateTimePicker(context, initialDateTime: time);
-    onTap?.call(dateTime);
   }
 }
 
@@ -257,6 +313,30 @@ class _Tile extends StatelessWidget {
     );
   }
 
+  Duration? getDuration() {
+    if (punch.startedAt == null) return null;
+    if (punch.endedAt == null) return null;
+    return punch.endedAt!.difference(punch.startedAt!);
+  }
+
+  String getText() {
+    if (punch.startedAt == null) return '';
+    if (punch.endedAt == null) return 'Still working';
+    final endedAt = punch.endedAt!;
+    final difference = endedAt.difference(punch.startedAt!);
+    final hours = difference.inMinutes / 60;
+    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
+    var gap = hours - 9;
+    if (endedAt.hour >= 19) {
+      gap -= 0.5;
+    } else if (endedAt.hour >= 18 && endedAt.minute >= 30) {
+      gap -= (endedAt.minute - 30) / 60;
+    }
+    final statusText = gap > 0 ? 'over' : 'under';
+    final gapText = gap.abs().toStringAsFixed(1);
+    return '$totalHoursText, $statusText $gapText hours.';
+  }
+
   void handleLongPress(BuildContext context) {
     showDialog(
       context: context,
@@ -285,49 +365,16 @@ class _Tile extends StatelessWidget {
     );
   }
 
-  void updateStartedAt(WidgetRef ref, DateTime? time) {
-    if (time == null) return;
-    final notifier = ref.read(punchesNotifierProvider.notifier);
-    notifier.makeUpStartedAt(punch, time);
-  }
-
   void updateEndedAt(WidgetRef ref, DateTime? time) {
     if (time == null) return;
     final notifier = ref.read(punchesNotifierProvider.notifier);
     notifier.makeUpEndedAt(punch, time);
   }
 
-  String getText() {
-    if (punch.startedAt == null) return '';
-    if (punch.endedAt == null) return 'Still working';
-    final endedAt = punch.endedAt!;
-    final difference = endedAt.difference(punch.startedAt!);
-    final hours = difference.inMinutes / 60;
-    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
-    var gap = hours - 9;
-    if (endedAt.hour >= 19) {
-      gap -= 0.5;
-    } else if (endedAt.hour >= 18 && endedAt.minute >= 30) {
-      gap -= (endedAt.minute - 30) / 60;
-    }
-    final statusText = gap > 0 ? 'over' : 'under';
-    final gapText = gap.abs().toStringAsFixed(1);
-    return '$totalHoursText, $statusText $gapText hours.';
-  }
-
-  Duration? getDuration() {
-    if (punch.startedAt == null) return null;
-    if (punch.endedAt == null) return null;
-    return punch.endedAt!.difference(punch.startedAt!);
-  }
-}
-
-class _HorizontalDivider extends StatelessWidget {
-  const _HorizontalDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Divider(height: 16, thickness: 0.25);
+  void updateStartedAt(WidgetRef ref, DateTime? time) {
+    if (time == null) return;
+    final notifier = ref.read(punchesNotifierProvider.notifier);
+    notifier.makeUpStartedAt(punch, time);
   }
 }
 
