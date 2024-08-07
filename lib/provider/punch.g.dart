@@ -6,23 +6,21 @@ part of 'punch.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$punchNotifierHash() => r'0b1e18eff05f8aca4850efe15821b97834a9639a';
+String _$overTimeHash() => r'f90f4599353482b40e6513968bd51f714123065e';
 
-/// See also [PunchNotifier].
-@ProviderFor(PunchNotifier)
-final punchNotifierProvider =
-    AutoDisposeAsyncNotifierProvider<PunchNotifier, Punch>.internal(
-  PunchNotifier.new,
-  name: r'punchNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$punchNotifierHash,
+/// See also [overTime].
+@ProviderFor(overTime)
+final overTimeProvider = AutoDisposeFutureProvider<double>.internal(
+  overTime,
+  name: r'overTimeProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$overTimeHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$PunchNotifier = AutoDisposeAsyncNotifier<Punch>;
-String _$punchesNotifierHash() => r'a27ce024172004d6a5905a72c3e8393196d900c5';
+typedef OverTimeRef = AutoDisposeFutureProviderRef<double>;
+String _$punchesNotifierHash() => r'a1fc50610eaaad30d7853a521a40c0c772a4183d';
 
 /// See also [PunchesNotifier].
 @ProviderFor(PunchesNotifier)
@@ -38,5 +36,21 @@ final punchesNotifierProvider =
 );
 
 typedef _$PunchesNotifier = AutoDisposeAsyncNotifier<List<Punch>>;
+String _$punchNotifierHash() => r'de75d611485fa94b62ff5cb2877f3567b1fb3eea';
+
+/// See also [PunchNotifier].
+@ProviderFor(PunchNotifier)
+final punchNotifierProvider =
+    AutoDisposeAsyncNotifierProvider<PunchNotifier, Punch>.internal(
+  PunchNotifier.new,
+  name: r'punchNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$punchNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$PunchNotifier = AutoDisposeAsyncNotifier<Punch>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/util/calendar.dart';
 
 class PPCalendar extends StatefulWidget {
@@ -233,16 +234,20 @@ class _Next extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text('Next'),
-            Icon(Icons.keyboard_double_arrow_right),
+            const Text('Next'),
+            HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowRightDouble,
+              color: color,
+            )
           ],
         ),
       ),
@@ -256,15 +261,19 @@ class _Previous extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.onSurface;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Icon(Icons.keyboard_double_arrow_left),
-            Text('Previous'),
+            HugeIcon(
+              icon: HugeIcons.strokeRoundedArrowLeftDouble,
+              color: color,
+            ),
+            const Text('Previous'),
           ],
         ),
       ),

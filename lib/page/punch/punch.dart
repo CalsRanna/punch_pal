@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
+import 'package:punch_pal/component/avatar.dart';
 import 'package:punch_pal/component/spacer.dart';
 import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
@@ -33,7 +35,7 @@ class _PunchPageState extends State<PunchPage> {
                     children: [_Hey(), _Welcome()],
                   ),
                 ),
-                _Avatar(),
+                Avatar(),
               ],
             ),
             const SizedBox(height: 32),
@@ -61,22 +63,36 @@ class _Conclusion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = colorScheme.onSurface;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _Item(
-          icon: const Icon(Icons.update),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedClock02,
+            color: color,
+            size: 44,
+          ),
           label: 'Punch In',
           time: punch?.startedAt,
         ),
         _Item(
-          icon: const Icon(Icons.history),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedClock03,
+            color: color,
+            size: 44,
+          ),
           label: 'Punch Out',
           time: punch?.endedAt,
         ),
         _Item(
           duration: getDuration(),
-          icon: const Icon(Icons.schedule),
+          icon: HugeIcon(
+            icon: HugeIcons.strokeRoundedClock01,
+            color: color,
+            size: 44,
+          ),
           label: 'Total Hours',
         ),
       ],
@@ -85,10 +101,7 @@ class _Conclusion extends StatelessWidget {
 
   Duration? getDuration() {
     if (punch?.startedAt == null) return null;
-    if (punch?.endedAt == null) {
-      final now = DateTime.now();
-      return now.difference(punch!.startedAt!);
-    }
+    if (punch?.endedAt == null) return null;
     return punch!.endedAt!.difference(punch!.startedAt!);
   }
 }
@@ -135,29 +148,7 @@ class _Hey extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Text(
       'Hey Cals!',
-      style: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w500,
-      ),
-    );
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  const _Avatar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        shape: BoxShape.circle,
-      ),
-      padding: const EdgeInsets.all(2),
-      child: const CircleAvatar(
-        backgroundImage: AssetImage('asset/image/avatar.png'),
-        radius: 32,
-      ),
+      style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
     );
   }
 }
@@ -222,8 +213,8 @@ class _Punch extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.fingerprint,
+                  HugeIcon(
+                    icon: HugeIcons.strokeRoundedTap01,
                     color: Theme.of(context).colorScheme.primary,
                     size: 32,
                   ),
@@ -276,7 +267,13 @@ class _Welcome extends StatelessWidget {
       < 18 => 'afternoon',
       _ => 'evening'
     };
-    return Text('Good $part! Mark you attendance.');
+    return Consumer(builder: (context, ref, child) {
+      final hours = ref.watch(overTimeProvider).value;
+      if (hours == null) return Text('Good $part!');
+      final formatted = hours.toStringAsFixed(1);
+      final text = 'Your deviation is $formatted hours.';
+      return Text('Good $part! $text');
+    });
   }
 }
 

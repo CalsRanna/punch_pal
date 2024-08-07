@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class PPNavigationBar extends StatelessWidget {
   final PPNavigationBarController controller;
@@ -29,7 +30,10 @@ class PPNavigationBar extends StatelessWidget {
                     Expanded(
                       child: _Tile(
                         active: controller.index == 0,
-                        icon: const Icon(Icons.home),
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedHome01,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
                         label: 'Home',
                         onTap: () => handleTap(0),
                       ),
@@ -38,7 +42,10 @@ class PPNavigationBar extends StatelessWidget {
                     Expanded(
                       child: _Tile(
                         active: controller.index == 1,
-                        icon: const Icon(Icons.calendar_month),
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedCalendar03,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
                         label: 'Statistic',
                         onTap: () => handleTap(1),
                       ),
@@ -47,7 +54,10 @@ class PPNavigationBar extends StatelessWidget {
                     Expanded(
                       child: _Tile(
                         active: controller.index == 2,
-                        icon: const Icon(Icons.settings),
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedSettings03,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
                         label: 'Setting',
                         onTap: () => handleTap(2),
                       ),
@@ -100,7 +110,7 @@ class _Indicator extends StatelessWidget {
 
 class _Tile extends StatefulWidget {
   final bool active;
-  final Icon icon;
+  final Widget icon;
   final String? label;
   final void Function()? onTap;
 

@@ -169,14 +169,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.8"
   custom_lint_core:
     dependency: transitive
     description:
@@ -323,6 +315,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
+  hugeicons:
+    dependency: "direct main"
+    description:
+      name: hugeicons
+      sha256: b5cf08183a75b7774ca6d601a2ef025ed26550e4fca9d956673ffda91e132411
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.7"
   io:
     dependency: transitive
     description:

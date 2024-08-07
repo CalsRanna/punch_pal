@@ -7,6 +7,14 @@ class CalendarState {
   int month = DateTime.now().month;
   int? day;
 
+  CalendarState();
+
+  CalendarState.fromDateTime(DateTime dateTime) {
+    year = dateTime.year;
+    month = dateTime.month;
+    day = dateTime.day;
+  }
+
   DateTime get date => DateTime(year, month, day ?? 1);
 
   @override
@@ -29,10 +37,7 @@ class CalendarNotifier extends _$CalendarNotifier {
         ..year = previousState.year
         ..month = previousState.month;
     } else {
-      state = CalendarState()
-        ..year = date.year
-        ..month = date.month
-        ..day = date.day;
+      state = CalendarState.fromDateTime(date);
     }
   }
 

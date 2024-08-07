@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:punch_pal/component/navigation_bar.dart';
-import 'package:punch_pal/page/home/punch.dart';
+import 'package:punch_pal/page/punch/punch.dart';
 import 'package:punch_pal/page/setting/setting.dart';
 import 'package:punch_pal/page/statistic/statistic.dart';
 

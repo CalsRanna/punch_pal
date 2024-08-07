@@ -6,7 +6,7 @@ part of 'calendar.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$calendarNotifierHash() => r'ab109603b44441e86bab6d5d785f70848683ad74';
+String _$calendarNotifierHash() => r'71599866636298f30b3aeb3ab3417f8185caf14e';
 
 /// See also [CalendarNotifier].
 @ProviderFor(CalendarNotifier)

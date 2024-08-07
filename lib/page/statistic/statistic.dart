@@ -8,6 +8,7 @@ import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
 import 'package:punch_pal/util/datetime.dart';
 import 'package:punch_pal/util/duration.dart';
+import 'package:punch_pal/util/deviation.dart';
 
 class StatisticPage extends StatelessWidget {
   const StatisticPage({super.key});
@@ -24,39 +25,8 @@ class StatisticPage extends StatelessWidget {
             SizedBox(height: 16),
             _Calendar(),
             SizedBox(height: 8),
-            _Statistic(),
-            SizedBox(height: 8),
             Expanded(child: _List()),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Statistic extends StatelessWidget {
-  const _Statistic();
-
-  @override
-  Widget build(BuildContext context) {
-    return UnconstrainedBox(
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.primaryContainer,
-          ),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        height: 24,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Text(
-          'Statistics',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-            fontSize: 10,
-            fontWeight: FontWeight.w300,
-          ),
         ),
       ),
     );
@@ -108,7 +78,10 @@ class _List extends StatelessWidget {
       final state = ref.watch(punchesNotifierProvider);
       return switch (state) {
         AsyncData(:final value) => SingleChildScrollView(
-            child: Column(children: getChildren(value)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: getChildren(value),
+            ),
           ),
         _ => const SizedBox(),
       };
@@ -117,6 +90,17 @@ class _List extends StatelessWidget {
 
   List<Widget> getChildren(List<Punch> punches) {
     List<Widget> children = [];
+    if (punches.length > 1) {
+      final deviation = DeviationCalculator().sum(punches);
+      final formatted = deviation.toStringAsFixed(1);
+      children.add(
+        Text(
+          'Deviation: $formatted hours',
+          style: const TextStyle(fontSize: 10),
+        ),
+      );
+      children.add(const SizedBox(height: 8));
+    }
     for (var i = 0; i < punches.length; i++) {
       children.add(_Tile(punch: punches[i]));
       children.add(const SizedBox(height: 8));
@@ -193,16 +177,8 @@ class _Item extends StatelessWidget {
   }
 
   void handleTap(BuildContext context) async {
-    // final timeOfDay =
-    //     time == null ? TimeOfDay.now() : TimeOfDay.fromDateTime(time!);
-    // final result = await showTimePicker(
-    //   context: context,
-    //   initialTime: timeOfDay,
-    //   initialEntryMode: TimePickerEntryMode.inputOnly,
-    // );
-    // onTap?.call(result);
+    if (onTap == null) return;
     final dateTime = await showDateTimePicker(context, initialDateTime: time);
-    print(dateTime);
     onTap?.call(dateTime);
   }
 }
@@ -322,15 +298,21 @@ class _Tile extends StatelessWidget {
   }
 
   String getText() {
-    if (punch.startedAt == null) return 'Something weird';
+    if (punch.startedAt == null) return '';
     if (punch.endedAt == null) return 'Still working';
-    final difference = punch.endedAt!.difference(punch.startedAt!);
-    final minutes = difference.inMinutes;
-    final hours = double.parse((minutes / 60).toStringAsFixed(1));
-    final total = 'Total $hours hours';
-    final gap = hours - 8;
-    final text = gap > 0 ? 'over' : 'under';
-    return '$total, $text ${gap.abs().toStringAsFixed(1)} hours.';
+    final endedAt = punch.endedAt!;
+    final difference = endedAt.difference(punch.startedAt!);
+    final hours = difference.inMinutes / 60;
+    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
+    var gap = hours - 9;
+    if (endedAt.hour >= 19) {
+      gap -= 0.5;
+    } else if (endedAt.hour >= 18 && endedAt.minute >= 30) {
+      gap -= (endedAt.minute - 30) / 60;
+    }
+    final statusText = gap > 0 ? 'over' : 'under';
+    final gapText = gap.abs().toStringAsFixed(1);
+    return '$totalHoursText, $statusText $gapText hours.';
   }
 
   Duration? getDuration() {
