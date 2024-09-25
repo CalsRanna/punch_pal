@@ -306,9 +306,9 @@ class _Title extends StatelessWidget {
   }
 
   String format() {
-    final first = ['January', 'February', 'March', 'April'];
-    final second = ['May', 'June', 'July', 'August'];
-    final last = ['September', 'October', 'November', 'December'];
+    final first = ['Jan', 'Feb', 'Mar', 'Apr'];
+    final second = ['May', 'Jun', 'Jul', 'Aug'];
+    final last = ['Sep', 'Oct', 'Nov', 'Dec'];
     final months = [...first, ...second, ...last];
     return '${months[date.month - 1]} ${date.year}';
   }
