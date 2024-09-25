@@ -63,6 +63,7 @@ class DeviationCalculator {
     if (![6, 7].contains(punch.date!.weekday)) {
       duration -= standard;
     }
+    if (punch.rescheduled) duration -= standard;
     final fixed = (duration.inMinutes / 60).toStringAsFixed(1);
     return double.parse(fixed);
   }

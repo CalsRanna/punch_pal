@@ -20,7 +20,7 @@ final overTimeProvider = AutoDisposeFutureProvider<double>.internal(
 );
 
 typedef OverTimeRef = AutoDisposeFutureProviderRef<double>;
-String _$punchesNotifierHash() => r'a1fc50610eaaad30d7853a521a40c0c772a4183d';
+String _$punchesNotifierHash() => r'425c672b9a8f0820d17eda427fc429467e9428bc';
 
 /// See also [PunchesNotifier].
 @ProviderFor(PunchesNotifier)

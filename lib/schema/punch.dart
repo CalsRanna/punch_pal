@@ -11,6 +11,7 @@ class Punch {
   DateTime? startedAt;
   @Name('ended_at')
   DateTime? endedAt;
+  bool rescheduled = false;
 
   Punch copyWith({DateTime? startedAt, DateTime? endedAt}) {
     return Punch()

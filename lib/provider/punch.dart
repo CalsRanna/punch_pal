@@ -39,6 +39,14 @@ class PunchesNotifier extends _$PunchesNotifier {
     ref.invalidateSelf();
   }
 
+  Future<void> toggleRescheduled(Punch punch) async {
+    punch.rescheduled = !punch.rescheduled;
+    await isar.writeTxn(() async {
+      await isar.punches.put(punch);
+    });
+    ref.invalidateSelf();
+  }
+
   Future<List<Punch>> _getPunch(CalendarState calendar) async {
     final date = calendar.date;
     final punches = await isar.punches.filter().dateEqualTo(date).findAll();

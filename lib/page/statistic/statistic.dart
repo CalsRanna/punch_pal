@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/component/calendar.dart';
 import 'package:punch_pal/component/date_time_picker.dart';
 import 'package:punch_pal/component/spacer.dart';
@@ -108,28 +109,75 @@ class _Date extends StatelessWidget {
         textColor = onError;
       }
       final style = TextStyle(color: textColor);
-      return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          color: backgroundColor,
-        ),
-        height: 64,
-        width: 64,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      return GestureDetector(
+        onTap: () => handleTap(context, ref, punch),
+        child: Stack(
           children: [
-            Text(
-              '${date.day}',
-              style: style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                color: backgroundColor,
+              ),
+              height: 64,
+              width: 64,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '${date.day}',
+                    style: style.copyWith(
+                        fontSize: 20, fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    date.formattedWeekday(3),
+                    style: style.copyWith(
+                        fontSize: 12, fontWeight: FontWeight.w400),
+                  ),
+                ],
+              ),
             ),
-            Text(
-              date.formattedWeekday(3),
-              style: style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
-            ),
+            if (punch.rescheduled)
+              const Positioned(
+                left: 4,
+                top: 4,
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
+                  color: Colors.red,
+                  size: 16,
+                ),
+              ),
           ],
         ),
       );
     });
+  }
+
+  void handleTap(BuildContext context, WidgetRef ref, Punch punch) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reschedule'),
+          content: const Text('Are you sure to reschedule this punch?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            Consumer(builder: (context, ref, child) {
+              return TextButton(
+                child: const Text('Reschedule'),
+                onPressed: () {
+                  final notifier = ref.read(punchesNotifierProvider.notifier);
+                  notifier.toggleRescheduled(punch);
+                  Navigator.pop(context);
+                },
+              );
+            })
+          ],
+        );
+      },
+    );
   }
 }
 
@@ -239,77 +287,57 @@ class _List extends StatelessWidget {
   }
 }
 
-class _Tile extends StatelessWidget {
+class _Tile extends ConsumerWidget {
   final Punch punch;
   const _Tile({required this.punch});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final punchIn = _Item(
+      label: 'Punch In',
+      onTap: (time) => updateStartedAt(ref, time),
+      time: punch.startedAt,
+    );
+    final punchOut = _Item(
+      label: 'Punch Out',
+      onTap: (time) => updateEndedAt(ref, time),
+      time: punch.endedAt,
+    );
+    final duration = _Item(duration: getDuration(), label: 'Total Hours');
+    final items = [
+      Expanded(child: punchIn),
+      const _VerticalDivider(),
+      Expanded(child: punchOut),
+      const _VerticalDivider(),
+      Expanded(child: duration),
+    ];
+    final columnChildren = [
+      Row(children: items),
+      const _HorizontalDivider(),
+      _Deviation(punch)
+    ];
+    final column = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: columnChildren,
+    );
+    final children = [
+      _Date(date: punch.date!),
+      const SizedBox(width: 16),
+      Expanded(child: column)
+    ];
+    final boxDecoration = BoxDecoration(
+      borderRadius: BorderRadius.circular(4),
+      color: Theme.of(context).colorScheme.surfaceContainer,
+    );
+    final tile = Container(
+      decoration: boxDecoration,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(children: children),
+    );
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onLongPress: () => handleLongPress(context),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          color: Theme.of(context).colorScheme.surfaceContainer,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            _Date(date: punch.date!),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Consumer(builder: (context, ref, child) {
-                          return _Item(
-                            label: 'Punch In',
-                            onTap: (time) => updateStartedAt(ref, time),
-                            time: punch.startedAt,
-                          );
-                        }),
-                      ),
-                      const _VerticalDivider(),
-                      Expanded(
-                        child: Consumer(builder: (context, ref, child) {
-                          return _Item(
-                            label: 'Punch Out',
-                            onTap: (time) => updateEndedAt(ref, time),
-                            time: punch.endedAt,
-                          );
-                        }),
-                      ),
-                      const _VerticalDivider(),
-                      Expanded(
-                        child: _Item(
-                          duration: getDuration(),
-                          label: 'Total Hours',
-                        ),
-                      ),
-                    ],
-                  ),
-                  const _HorizontalDivider(),
-                  Text(
-                    getText(),
-                    style: TextStyle(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withOpacity(0.3),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
+      child: tile,
     );
   }
 
@@ -380,5 +408,33 @@ class _VerticalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(height: 16, child: VerticalDivider(thickness: 0.5));
+  }
+}
+
+class _Deviation extends StatelessWidget {
+  final Punch punch;
+  const _Deviation(this.punch);
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+      fontSize: 10,
+      fontWeight: FontWeight.w300,
+    );
+    return Text(getText(), style: textStyle);
+  }
+
+  String getText() {
+    if (punch.startedAt == null) return '';
+    if (punch.endedAt == null) return 'Still working';
+    final endedAt = punch.endedAt!;
+    final difference = endedAt.difference(punch.startedAt!);
+    final hours = difference.inMinutes / 60;
+    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
+    final deviation = DeviationCalculator().calculate(punch);
+    final sign = deviation < 0 ? '-' : '+';
+    final formatted = deviation.abs().toStringAsFixed(1);
+    return '$totalHoursText, deviate $sign $formatted hours.';
   }
 }

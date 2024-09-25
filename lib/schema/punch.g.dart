@@ -27,8 +27,13 @@ const PunchSchema = CollectionSchema(
       name: r'ended_at',
       type: IsarType.dateTime,
     ),
-    r'started_at': PropertySchema(
+    r'rescheduled': PropertySchema(
       id: 2,
+      name: r'rescheduled',
+      type: IsarType.bool,
+    ),
+    r'started_at': PropertySchema(
+      id: 3,
       name: r'started_at',
       type: IsarType.dateTime,
     )
@@ -64,7 +69,8 @@ void _punchSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.date);
   writer.writeDateTime(offsets[1], object.endedAt);
-  writer.writeDateTime(offsets[2], object.startedAt);
+  writer.writeBool(offsets[2], object.rescheduled);
+  writer.writeDateTime(offsets[3], object.startedAt);
 }
 
 Punch _punchDeserialize(
@@ -77,7 +83,8 @@ Punch _punchDeserialize(
   object.date = reader.readDateTimeOrNull(offsets[0]);
   object.endedAt = reader.readDateTimeOrNull(offsets[1]);
   object.id = id;
-  object.startedAt = reader.readDateTimeOrNull(offsets[2]);
+  object.rescheduled = reader.readBool(offsets[2]);
+  object.startedAt = reader.readDateTimeOrNull(offsets[3]);
   return object;
 }
 
@@ -93,6 +100,8 @@ P _punchDeserializeProp<P>(
     case 1:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 2:
+      return (reader.readBool(offset)) as P;
+    case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -393,6 +402,16 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> rescheduledEqualTo(
+      bool value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'rescheduled',
+        value: value,
+      ));
+    });
+  }
+
   QueryBuilder<Punch, Punch, QAfterFilterCondition> startedAtIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -492,6 +511,18 @@ extension PunchQuerySortBy on QueryBuilder<Punch, Punch, QSortBy> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QAfterSortBy> sortByRescheduled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rescheduled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterSortBy> sortByRescheduledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rescheduled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Punch, Punch, QAfterSortBy> sortByStartedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'started_at', Sort.asc);
@@ -542,6 +573,18 @@ extension PunchQuerySortThenBy on QueryBuilder<Punch, Punch, QSortThenBy> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QAfterSortBy> thenByRescheduled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rescheduled', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterSortBy> thenByRescheduledDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'rescheduled', Sort.desc);
+    });
+  }
+
   QueryBuilder<Punch, Punch, QAfterSortBy> thenByStartedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'started_at', Sort.asc);
@@ -568,6 +611,12 @@ extension PunchQueryWhereDistinct on QueryBuilder<Punch, Punch, QDistinct> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QDistinct> distinctByRescheduled() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'rescheduled');
+    });
+  }
+
   QueryBuilder<Punch, Punch, QDistinct> distinctByStartedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'started_at');
@@ -591,6 +640,12 @@ extension PunchQueryProperty on QueryBuilder<Punch, Punch, QQueryProperty> {
   QueryBuilder<Punch, DateTime?, QQueryOperations> endedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'ended_at');
+    });
+  }
+
+  QueryBuilder<Punch, bool, QQueryOperations> rescheduledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'rescheduled');
     });
   }
 
