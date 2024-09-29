@@ -339,8 +339,16 @@ class _TimeState extends State<_Time> {
   }
 
   String weekday() {
-    final day = DateTime.now().weekday;
-    final week = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    return '${week[day]}day';
+    final weekday = DateTime.now().weekday;
+    return switch (weekday) {
+      1 => 'Monday',
+      2 => 'Tuesday',
+      3 => 'Wednesday',
+      4 => 'Thursday',
+      5 => 'Friday',
+      6 => 'Saturday',
+      7 => 'Sunday',
+      _ => ''
+    };
   }
 }
