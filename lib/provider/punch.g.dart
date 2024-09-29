@@ -52,5 +52,22 @@ final punchNotifierProvider =
 );
 
 typedef _$PunchNotifier = AutoDisposeAsyncNotifier<Punch>;
+String _$punchesForIndicatorNotifierHash() =>
+    r'd3d221d3aed02dd27083cf9b2a0d01d8f8abf477';
+
+/// See also [PunchesForIndicatorNotifier].
+@ProviderFor(PunchesForIndicatorNotifier)
+final punchesForIndicatorNotifierProvider = AutoDisposeAsyncNotifierProvider<
+    PunchesForIndicatorNotifier, List<Punch>>.internal(
+  PunchesForIndicatorNotifier.new,
+  name: r'punchesForIndicatorNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$punchesForIndicatorNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$PunchesForIndicatorNotifier = AutoDisposeAsyncNotifier<List<Punch>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

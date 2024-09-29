@@ -34,36 +34,34 @@ class StatisticPage extends StatelessWidget {
   }
 }
 
-class _Calendar extends StatelessWidget {
+class _Calendar extends ConsumerWidget {
   const _Calendar();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Consumer(builder: (context, ref, child) {
-      final punches = ref.watch(punchesNotifierProvider).value;
-      return PPCalendar(
-        indicatorBuilder: (datetime) {
-          var color = Colors.transparent;
-          if (punches != null) {
-            final punch = punches.where((p) => p.date == datetime).firstOrNull;
-            if (punch != null) {
-              final deviation = DeviationCalculator().calculate(punch);
-              if (deviation < 0) {
-                color = colorScheme.errorContainer;
-              } else {
-                color = colorScheme.primary;
-              }
+    final punches = ref.watch(punchesForIndicatorNotifierProvider).value;
+    return PPCalendar(
+      indicatorBuilder: (datetime) {
+        var color = Colors.transparent;
+        if (punches != null) {
+          final punch = punches.where((p) => p.date == datetime).firstOrNull;
+          if (punch != null) {
+            final deviation = DeviationCalculator().calculate(punch);
+            if (deviation < 0) {
+              color = colorScheme.errorContainer;
+            } else {
+              color = colorScheme.primary;
             }
           }
-          return PPCalendarIndicator(color);
-        },
-        onChanged: (value) => handleChanged(ref, value),
-        onNext: () => handleNext(ref),
-        onPrevious: () => handlePrevious(ref),
-        onReset: () => handleReset(ref),
-      );
-    });
+        }
+        return PPCalendarIndicator(color);
+      },
+      onChanged: (value) => handleChanged(ref, value),
+      onNext: () => handleNext(ref),
+      onPrevious: () => handlePrevious(ref),
+      onReset: () => handleReset(ref),
+    );
   }
 
   void handleChanged(WidgetRef ref, DateTime? date) {

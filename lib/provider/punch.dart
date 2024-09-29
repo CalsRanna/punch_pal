@@ -8,6 +8,28 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'punch.g.dart';
 
 @riverpod
+Future<double> overTime(OverTimeRef ref) async {
+  final now = DateTime.now();
+  final start = DateTime(now.year, now.month, 1);
+  final end = DateTime(now.year, now.month + 1, 0);
+  final queryBuilder = isar.punches.filter().dateBetween(start, end);
+  final punches = await queryBuilder.sortByDateDesc().findAll();
+  return DeviationCalculator().sum(punches);
+}
+
+@riverpod
+class PunchesForIndicatorNotifier extends _$PunchesForIndicatorNotifier {
+  @override
+  Future<List<Punch>> build() async {
+    final calendar = ref.watch(calendarNotifierProvider);
+    final start = DateTime(calendar.year, calendar.month, 1);
+    final end = DateTime(calendar.year, calendar.month + 1, 0);
+    final queryBuilder = isar.punches.filter().dateBetween(start, end);
+    return await queryBuilder.sortByDateDesc().findAll();
+  }
+}
+
+@riverpod
 class PunchesNotifier extends _$PunchesNotifier {
   @override
   Future<List<Punch>> build() async {
@@ -99,14 +121,4 @@ class PunchNotifier extends _$PunchNotifier {
     });
     state = AsyncData(punch);
   }
-}
-
-@riverpod
-Future<double> overTime(OverTimeRef ref) async {
-  final now = DateTime.now();
-  final start = DateTime(now.year, now.month, 1);
-  final end = DateTime(now.year, now.month + 1, 0);
-  final queryBuilder = isar.punches.filter().dateBetween(start, end);
-  final punches = await queryBuilder.sortByDateDesc().findAll();
-  return DeviationCalculator().sum(punches);
 }
