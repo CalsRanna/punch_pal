@@ -242,47 +242,47 @@ class _Item extends StatelessWidget {
   }
 }
 
-class _List extends StatelessWidget {
+class _List extends ConsumerWidget {
   const _List();
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(builder: (context, ref, child) {
-      final state = ref.watch(punchesNotifierProvider);
-      return switch (state) {
-        AsyncData(:final value) => SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: getChildren(value),
-            ),
-          ),
-        _ => const SizedBox(),
-      };
-    });
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(punchesNotifierProvider);
+    return switch (state) {
+      AsyncData(:final value) => _buildAsyncData(value),
+      _ => const SizedBox(),
+    };
+  }
+
+  Widget _buildAsyncData(List<Punch> value) {
+    if (value.isEmpty) return const Center(child: Text('No punches yet'));
+    final children = getChildren(value);
+    final column = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
+    return SingleChildScrollView(child: column);
   }
 
   List<Widget> getChildren(List<Punch> punches) {
     List<Widget> children = [];
-    if (punches.length > 1) {
-      final deviation = DeviationCalculator().sum(punches);
-      final sign = deviation < 0 ? '-' : '+';
-      final formatted = deviation.abs().toStringAsFixed(1);
-      children.add(
-        Text(
-          'Deviation: $sign$formatted hours'.toUpperCase(),
-          style: const TextStyle(fontSize: 10),
-        ),
-      );
-      children.add(const SizedBox(height: 8));
-    }
+    // if (punches.length > 1) {
+    final deviation = DeviationCalculator().sum(punches);
+    final sign = deviation < 0 ? '-' : '+';
+    final formatted = deviation.abs().toStringAsFixed(1);
+    final text = Text(
+      'Deviation: $sign$formatted hours'.toUpperCase(),
+      style: const TextStyle(fontSize: 10),
+    );
+    children.add(text);
+    children.add(const SizedBox(height: 8));
+    // }
     for (var i = 0; i < punches.length; i++) {
       children.add(_Tile(punch: punches[i]));
       children.add(const SizedBox(height: 8));
-      if (i == punches.length - 1) {
-        children.add(const SizedBox(height: 80));
-        children.add(const PPBottomSpacer());
-      }
     }
+    children.add(const SizedBox(height: 80));
+    children.add(const PPBottomSpacer());
     return children;
   }
 }
