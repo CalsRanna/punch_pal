@@ -56,6 +56,22 @@ class SettingPage extends StatelessWidget {
               onTap: () => handleTap(ref),
             );
           }),
+          Divider(
+            color: color.withOpacity(0.1),
+            endIndent: 16,
+            height: 1,
+            indent: 16,
+          ),
+          ListTile(
+            leading: HugeIcon(
+              icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
+              color: color,
+            ),
+            title: const Text('Rescheduled'),
+            subtitle: const Text(
+              'This day will be regarded as a standard workday and will only be marked on the weekends.',
+            ),
+          ),
         ],
       ),
     );

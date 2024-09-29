@@ -150,6 +150,29 @@ class _Date extends StatelessWidget {
     });
   }
 
+  void confirmReschedule(BuildContext context, WidgetRef ref, Punch punch) {
+    Navigator.pop(context);
+    final date = punch.date;
+    if (date == null || ![6, 7].contains(date.weekday)) {
+      final theme = Theme.of(context);
+      final colorScheme = theme.colorScheme;
+      final primaryContainer = colorScheme.primaryContainer;
+      final onPrimaryContainer = colorScheme.onPrimaryContainer;
+      final textStyle = TextStyle(color: onPrimaryContainer);
+      final text = Text('You can not reschedule a weekday', style: textStyle);
+      final snackBar = SnackBar(
+        backgroundColor: primaryContainer,
+        behavior: SnackBarBehavior.floating,
+        content: text,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 96),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
+    }
+    final notifier = ref.read(punchesNotifierProvider.notifier);
+    notifier.toggleRescheduled(punch);
+  }
+
   void handleTap(BuildContext context, WidgetRef ref, Punch punch) {
     showDialog(
       context: context,
@@ -165,17 +188,41 @@ class _Date extends StatelessWidget {
             Consumer(builder: (context, ref, child) {
               return TextButton(
                 child: const Text('Reschedule'),
-                onPressed: () {
-                  final notifier = ref.read(punchesNotifierProvider.notifier);
-                  notifier.toggleRescheduled(punch);
-                  Navigator.pop(context);
-                },
+                onPressed: () => confirmReschedule(context, ref, punch),
               );
             })
           ],
         );
       },
     );
+  }
+}
+
+class _Deviation extends StatelessWidget {
+  final Punch punch;
+  const _Deviation(this.punch);
+
+  @override
+  Widget build(BuildContext context) {
+    final textStyle = TextStyle(
+      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+      fontSize: 10,
+      fontWeight: FontWeight.w300,
+    );
+    return Text(getText(), style: textStyle);
+  }
+
+  String getText() {
+    if (punch.startedAt == null) return '';
+    if (punch.endedAt == null) return 'Still working';
+    final endedAt = punch.endedAt!;
+    final difference = endedAt.difference(punch.startedAt!);
+    final hours = difference.inMinutes / 60;
+    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
+    final deviation = DeviationCalculator().calculate(punch);
+    final sign = deviation < 0 ? '-' : '+';
+    final formatted = deviation.abs().toStringAsFixed(1);
+    return '$totalHoursText, deviate $sign $formatted hours.';
   }
 }
 
@@ -252,16 +299,6 @@ class _List extends ConsumerWidget {
     };
   }
 
-  Widget _buildAsyncData(List<Punch> value) {
-    if (value.isEmpty) return const Center(child: Text('No punches yet'));
-    final children = getChildren(value);
-    final column = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: children,
-    );
-    return SingleChildScrollView(child: column);
-  }
-
   List<Widget> getChildren(List<Punch> punches) {
     List<Widget> children = [];
     // if (punches.length > 1) {
@@ -282,6 +319,16 @@ class _List extends ConsumerWidget {
     children.add(const SizedBox(height: 80));
     children.add(const PPBottomSpacer());
     return children;
+  }
+
+  Widget _buildAsyncData(List<Punch> value) {
+    if (value.isEmpty) return const Center(child: Text('No punches yet'));
+    final children = getChildren(value);
+    final column = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    );
+    return SingleChildScrollView(child: column);
   }
 }
 
@@ -406,33 +453,5 @@ class _VerticalDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(height: 16, child: VerticalDivider(thickness: 0.5));
-  }
-}
-
-class _Deviation extends StatelessWidget {
-  final Punch punch;
-  const _Deviation(this.punch);
-
-  @override
-  Widget build(BuildContext context) {
-    final textStyle = TextStyle(
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-      fontSize: 10,
-      fontWeight: FontWeight.w300,
-    );
-    return Text(getText(), style: textStyle);
-  }
-
-  String getText() {
-    if (punch.startedAt == null) return '';
-    if (punch.endedAt == null) return 'Still working';
-    final endedAt = punch.endedAt!;
-    final difference = endedAt.difference(punch.startedAt!);
-    final hours = difference.inMinutes / 60;
-    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
-    final deviation = DeviationCalculator().calculate(punch);
-    final sign = deviation < 0 ? '-' : '+';
-    final formatted = deviation.abs().toStringAsFixed(1);
-    return '$totalHoursText, deviate $sign $formatted hours.';
   }
 }
