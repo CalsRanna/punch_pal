@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 Future<DateTime?> showDateTimePicker(
   BuildContext context, {
@@ -364,6 +365,7 @@ class _WheelPickerState extends State<_WheelPicker> {
       ),
       itemExtent: 36,
       onSelectedItemChanged: (value) {
+        HapticFeedback.selectionClick();
         setState(() {
           selected = value;
         });

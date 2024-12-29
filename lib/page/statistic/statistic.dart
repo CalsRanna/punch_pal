@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/component/calendar.dart';
@@ -174,6 +175,7 @@ class _Date extends StatelessWidget {
   }
 
   void handleTap(BuildContext context, WidgetRef ref, Punch punch) {
+    HapticFeedback.lightImpact();
     showDialog(
       context: context,
       builder: (context) {
@@ -407,6 +409,7 @@ class _Tile extends ConsumerWidget {
   }
 
   void handleLongPress(BuildContext context) {
+    HapticFeedback.mediumImpact();
     showDialog(
       context: context,
       builder: (context) {
