@@ -34,13 +34,16 @@ class _PPCalendarState extends State<PPCalendar> {
           borderRadius: BorderRadius.circular(8),
           color: Theme.of(context).colorScheme.surfaceContainer,
         ),
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             Row(
               children: [
                 Expanded(child: _Previous(onTap: previousMonth)),
-                Expanded(child: _Title(date: current, onTap: resetMonth)),
+                Expanded(
+                  flex: 5,
+                  child: _Title(date: current, onTap: resetMonth),
+                ),
                 Expanded(child: _Next(onTap: nextMonth)),
               ],
             ),
@@ -246,15 +249,9 @@ class _Next extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            const Text('Next'),
-            HugeIcon(
-              icon: HugeIcons.strokeRoundedArrowRightDouble,
-              color: color,
-            )
-          ],
+        child: HugeIcon(
+          icon: HugeIcons.strokeRoundedArrowRightDouble,
+          color: color,
         ),
       ),
     );
@@ -273,14 +270,9 @@ class _Previous extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            HugeIcon(
-              icon: HugeIcons.strokeRoundedArrowLeftDouble,
-              color: color,
-            ),
-            const Text('Previous'),
-          ],
+        child: HugeIcon(
+          icon: HugeIcons.strokeRoundedArrowLeftDouble,
+          color: color,
         ),
       ),
     );

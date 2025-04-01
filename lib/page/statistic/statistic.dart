@@ -5,11 +5,13 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:punch_pal/component/calendar.dart';
 import 'package:punch_pal/component/date_time_picker.dart';
 import 'package:punch_pal/component/spacer.dart';
+import 'package:punch_pal/page/statistic/component/punch_bottom_sheet.dart';
 import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
 import 'package:punch_pal/util/datetime.dart';
 import 'package:punch_pal/util/deviation.dart';
+import 'package:punch_pal/util/dialog_util.dart';
 import 'package:punch_pal/util/duration.dart';
 
 class StatisticPage extends StatelessWidget {
@@ -108,95 +110,44 @@ class _Date extends StatelessWidget {
         textColor = onError;
       }
       final style = TextStyle(color: textColor);
-      return GestureDetector(
-        onTap: () => handleTap(context, ref, punch),
-        child: Stack(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                color: backgroundColor,
-              ),
-              height: 64,
-              width: 64,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '${date.day}',
-                    style: style.copyWith(
-                        fontSize: 20, fontWeight: FontWeight.w700),
-                  ),
-                  Text(
-                    date.formattedWeekday(3),
-                    style: style.copyWith(
-                        fontSize: 12, fontWeight: FontWeight.w400),
-                  ),
-                ],
+      return Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color: backgroundColor,
+            ),
+            height: 64,
+            width: 64,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '${date.day}',
+                  style:
+                      style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
+                ),
+                Text(
+                  date.formattedWeekday(3),
+                  style:
+                      style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
+          ),
+          if (punch.rescheduled)
+            const Positioned(
+              left: 4,
+              top: 4,
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
+                color: Colors.red,
+                size: 16,
               ),
             ),
-            if (punch.rescheduled)
-              const Positioned(
-                left: 4,
-                top: 4,
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
-                  color: Colors.red,
-                  size: 16,
-                ),
-              ),
-          ],
-        ),
+        ],
       );
     });
-  }
-
-  void confirmReschedule(BuildContext context, WidgetRef ref, Punch punch) {
-    Navigator.pop(context);
-    final date = punch.date;
-    if (date == null || ![6, 7].contains(date.weekday)) {
-      final theme = Theme.of(context);
-      final colorScheme = theme.colorScheme;
-      final primaryContainer = colorScheme.primaryContainer;
-      final onPrimaryContainer = colorScheme.onPrimaryContainer;
-      final textStyle = TextStyle(color: onPrimaryContainer);
-      final text = Text('You can not reschedule a weekday', style: textStyle);
-      final snackBar = SnackBar(
-        backgroundColor: primaryContainer,
-        behavior: SnackBarBehavior.floating,
-        content: text,
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 96),
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      return;
-    }
-    final notifier = ref.read(punchesNotifierProvider.notifier);
-    notifier.toggleRescheduled(punch);
-  }
-
-  void handleTap(BuildContext context, WidgetRef ref, Punch punch) {
-    HapticFeedback.lightImpact();
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Reschedule'),
-          content: const Text('Are you sure to reschedule this punch?'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            Consumer(builder: (context, ref, child) {
-              return TextButton(
-                child: const Text('Reschedule'),
-                onPressed: () => confirmReschedule(context, ref, punch),
-              );
-            })
-          ],
-        );
-      },
-    );
   }
 }
 
@@ -296,7 +247,7 @@ class _List extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(punchesNotifierProvider);
     return switch (state) {
-      AsyncData(:final value) => _buildAsyncData(value),
+      AsyncData(:final value) => _buildData(value),
       _ => const SizedBox(),
     };
   }
@@ -323,8 +274,15 @@ class _List extends ConsumerWidget {
     return children;
   }
 
-  Widget _buildAsyncData(List<Punch> value) {
-    if (value.isEmpty) return const Center(child: Text('No punches yet'));
+  Widget _buildData(List<Punch> value) {
+    if (value.isEmpty) {
+      const children = [
+        Expanded(child: Center(child: Text('No punches yet'))),
+        SizedBox(height: 80),
+        PPBottomSpacer(),
+      ];
+      return const Column(children: children);
+    }
     final children = getChildren(value);
     final column = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,31 +368,32 @@ class _Tile extends ConsumerWidget {
 
   void handleLongPress(BuildContext context) {
     HapticFeedback.mediumImpact();
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete'),
-          content: const Text('Are you sure to delete this punch?'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            Consumer(builder: (context, ref, child) {
-              return TextButton(
-                child: const Text('Delete'),
-                onPressed: () {
-                  final notifier = ref.read(punchesNotifierProvider.notifier);
-                  notifier.destroy(punch);
-                  Navigator.pop(context);
-                },
-              );
-            })
-          ],
-        );
-      },
-    );
+    DialogUtil.openBottomSheet(context, PunchBottomSheet(punch: punch));
+    // showDialog(
+    //   context: context,
+    //   builder: (context) {
+    //     return AlertDialog(
+    //       title: const Text('Delete'),
+    //       content: const Text('Are you sure to delete this punch?'),
+    //       actions: [
+    //         TextButton(
+    //           child: const Text('Cancel'),
+    //           onPressed: () => Navigator.pop(context),
+    //         ),
+    //         Consumer(builder: (context, ref, child) {
+    //           return TextButton(
+    //             child: const Text('Delete'),
+    //             onPressed: () {
+    //               final notifier = ref.read(punchesNotifierProvider.notifier);
+    //               notifier.destroy(punch);
+    //               Navigator.pop(context);
+    //             },
+    //           );
+    //         })
+    //       ],
+    //     );
+    //   },
+    // );
   }
 
   void updateEndedAt(WidgetRef ref, DateTime? time) {
