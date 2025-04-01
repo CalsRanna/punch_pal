@@ -45,6 +45,13 @@ class PunchesNotifier extends _$PunchesNotifier {
     ref.invalidateSelf();
   }
 
+  Future<void> updateDayOff(Punch punch) async {
+    await isar.writeTxn(() async {
+      await isar.punches.put(punch);
+    });
+    ref.invalidateSelf();
+  }
+
   Future<void> makeUpEndedAt(Punch punch, DateTime time) async {
     punch.endedAt = time;
     await isar.writeTxn(() async {

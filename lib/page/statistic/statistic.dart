@@ -10,6 +10,7 @@ import 'package:punch_pal/provider/calendar.dart';
 import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
 import 'package:punch_pal/util/datetime.dart';
+import 'package:punch_pal/util/day_off_calculator.dart';
 import 'package:punch_pal/util/deviation.dart';
 import 'package:punch_pal/util/dialog_util.dart';
 import 'package:punch_pal/util/duration.dart';
@@ -110,42 +111,26 @@ class _Date extends StatelessWidget {
         textColor = onError;
       }
       final style = TextStyle(color: textColor);
-      return Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
-              color: backgroundColor,
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: backgroundColor,
+        ),
+        height: 64,
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${date.day}',
+              style: style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
             ),
-            height: 64,
-            width: 64,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '${date.day}',
-                  style:
-                      style.copyWith(fontSize: 20, fontWeight: FontWeight.w700),
-                ),
-                Text(
-                  date.formattedWeekday(3),
-                  style:
-                      style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
-                ),
-              ],
+            Text(
+              date.formattedWeekday(3),
+              style: style.copyWith(fontSize: 12, fontWeight: FontWeight.w400),
             ),
-          ),
-          if (punch.rescheduled)
-            const Positioned(
-              left: 4,
-              top: 4,
-              child: HugeIcon(
-                icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
-                color: Colors.red,
-                size: 16,
-              ),
-            ),
-        ],
+          ],
+        ),
       );
     });
   }
@@ -162,20 +147,35 @@ class _Deviation extends StatelessWidget {
       fontSize: 10,
       fontWeight: FontWeight.w300,
     );
-    return Text(getText(), style: textStyle);
+    const dayOffIcon = HugeIcon(
+      icon: HugeIcons.strokeRoundedCalendarRemove02,
+      color: Colors.red,
+      size: 16,
+    );
+    const rescheduleIcon = HugeIcon(
+      icon: HugeIcons.strokeRoundedCircleArrowDataTransferDiagonal,
+      color: Colors.red,
+      size: 16,
+    );
+    var children = [
+      Expanded(child: Text(getText(), style: textStyle)),
+      if (punch.dayOffSeconds > 0) ...[const SizedBox(width: 4), dayOffIcon],
+      if (punch.rescheduled) ...[const SizedBox(width: 4), rescheduleIcon],
+    ];
+    return Row(children: children);
   }
 
   String getText() {
     if (punch.startedAt == null) return '';
     if (punch.endedAt == null) return 'Still working';
-    final endedAt = punch.endedAt!;
-    final difference = endedAt.difference(punch.startedAt!);
-    final hours = difference.inMinutes / 60;
-    final totalHoursText = 'Total ${hours.toStringAsFixed(1)} hours';
     final deviation = DeviationCalculator().calculate(punch);
     final sign = deviation < 0 ? '-' : '+';
     final formatted = deviation.abs().toStringAsFixed(1);
-    return '$totalHoursText, deviate $sign $formatted hours.';
+    var text = 'Deviate $sign $formatted hours';
+    if (punch.dayOffSeconds <= 0) return '$text.';
+    var dayOff = punch.dayOffSeconds / 60 / 60;
+    final dayOffText = 'day off ${dayOff.toStringAsFixed(1)} hours';
+    return '$text, $dayOffText.';
   }
 }
 
@@ -258,11 +258,15 @@ class _List extends ConsumerWidget {
     final deviation = DeviationCalculator().sum(punches);
     final sign = deviation < 0 ? '-' : '+';
     final formatted = deviation.abs().toStringAsFixed(1);
-    final text = Text(
-      'Deviation: $sign$formatted hours'.toUpperCase(),
+    var text = 'Deviation: $sign $formatted hours';
+    final dayOff = DayOffCalculator().sum(punches);
+    var dayOffHours = dayOff / 60 / 60;
+    if (dayOff > 0) text += ', day off ${dayOffHours.toStringAsFixed(1)} hours';
+    var summaryText = Text(
+      text.toUpperCase(),
       style: const TextStyle(fontSize: 10),
     );
-    children.add(text);
+    children.add(summaryText);
     children.add(const SizedBox(height: 8));
     // }
     for (var i = 0; i < punches.length; i++) {
@@ -369,31 +373,6 @@ class _Tile extends ConsumerWidget {
   void handleLongPress(BuildContext context) {
     HapticFeedback.mediumImpact();
     DialogUtil.openBottomSheet(context, PunchBottomSheet(punch: punch));
-    // showDialog(
-    //   context: context,
-    //   builder: (context) {
-    //     return AlertDialog(
-    //       title: const Text('Delete'),
-    //       content: const Text('Are you sure to delete this punch?'),
-    //       actions: [
-    //         TextButton(
-    //           child: const Text('Cancel'),
-    //           onPressed: () => Navigator.pop(context),
-    //         ),
-    //         Consumer(builder: (context, ref, child) {
-    //           return TextButton(
-    //             child: const Text('Delete'),
-    //             onPressed: () {
-    //               final notifier = ref.read(punchesNotifierProvider.notifier);
-    //               notifier.destroy(punch);
-    //               Navigator.pop(context);
-    //             },
-    //           );
-    //         })
-    //       ],
-    //     );
-    //   },
-    // );
   }
 
   void updateEndedAt(WidgetRef ref, DateTime? time) {

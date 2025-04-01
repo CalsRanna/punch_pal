@@ -20,7 +20,24 @@ final overTimeProvider = AutoDisposeFutureProvider<double>.internal(
 );
 
 typedef OverTimeRef = AutoDisposeFutureProviderRef<double>;
-String _$punchesNotifierHash() => r'425c672b9a8f0820d17eda427fc429467e9428bc';
+String _$punchesForIndicatorNotifierHash() =>
+    r'87dd55427e6821bcddd7eee001ed7945d81c0ad3';
+
+/// See also [PunchesForIndicatorNotifier].
+@ProviderFor(PunchesForIndicatorNotifier)
+final punchesForIndicatorNotifierProvider = AutoDisposeAsyncNotifierProvider<
+    PunchesForIndicatorNotifier, List<Punch>>.internal(
+  PunchesForIndicatorNotifier.new,
+  name: r'punchesForIndicatorNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$punchesForIndicatorNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$PunchesForIndicatorNotifier = AutoDisposeAsyncNotifier<List<Punch>>;
+String _$punchesNotifierHash() => r'2cd72e7722459cd728d9383aaceed2705e565dd1';
 
 /// See also [PunchesNotifier].
 @ProviderFor(PunchesNotifier)
@@ -52,22 +69,5 @@ final punchNotifierProvider =
 );
 
 typedef _$PunchNotifier = AutoDisposeAsyncNotifier<Punch>;
-String _$punchesForIndicatorNotifierHash() =>
-    r'd3d221d3aed02dd27083cf9b2a0d01d8f8abf477';
-
-/// See also [PunchesForIndicatorNotifier].
-@ProviderFor(PunchesForIndicatorNotifier)
-final punchesForIndicatorNotifierProvider = AutoDisposeAsyncNotifierProvider<
-    PunchesForIndicatorNotifier, List<Punch>>.internal(
-  PunchesForIndicatorNotifier.new,
-  name: r'punchesForIndicatorNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$punchesForIndicatorNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$PunchesForIndicatorNotifier = AutoDisposeAsyncNotifier<List<Punch>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

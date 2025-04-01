@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:punch_pal/component/date_time_picker.dart';
 import 'package:punch_pal/provider/punch.dart';
 import 'package:punch_pal/schema/punch.dart';
+import 'package:punch_pal/util/day_off_calculator.dart';
 
 class PunchBottomSheet extends ConsumerWidget {
   final Punch punch;
@@ -17,7 +19,7 @@ class PunchBottomSheet extends ConsumerWidget {
     );
     var dayOffListTile = _ListTile(
       iconData: HugeIcons.strokeRoundedCalendarRemove02,
-      onTap: () {},
+      onTap: () => dayOffPunch(context, ref),
       title: 'Day off',
     );
     var deleteListTile = _ListTile(
@@ -45,6 +47,20 @@ class PunchBottomSheet extends ConsumerWidget {
   void destroyPunch(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(punchesNotifierProvider.notifier);
     notifier.destroy(punch);
+    Navigator.pop(context);
+  }
+
+  Future<void> dayOffPunch(BuildContext context, WidgetRef ref) async {
+    var startedAt = await showDateTimePicker(context, text: 'next');
+    if (startedAt == null) return;
+    if (!context.mounted) return;
+    var endedAt = await showDateTimePicker(context);
+    if (endedAt == null) return;
+    var seconds = DayOffCalculator().calculate(startedAt, endedAt);
+    var copiedPunch = punch.copyWith(dayOffSeconds: seconds);
+    final notifier = ref.read(punchesNotifierProvider.notifier);
+    notifier.updateDayOff(copiedPunch);
+    if (!context.mounted) return;
     Navigator.pop(context);
   }
 

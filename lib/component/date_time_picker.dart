@@ -5,6 +5,7 @@ Future<DateTime?> showDateTimePicker(
   BuildContext context, {
   Widget? header,
   DateTime? initialDateTime,
+  String? text,
 }) async {
   return showModalBottomSheet(
     backgroundColor: Colors.transparent,
@@ -12,7 +13,11 @@ Future<DateTime?> showDateTimePicker(
     builder: (context) {
       return _ParentData(
         dateTime: initialDateTime,
-        child: _Dialog(header: header, initialDateTime: initialDateTime),
+        child: _Dialog(
+          header: header,
+          initialDateTime: initialDateTime,
+          text: text,
+        ),
       );
     },
   );
@@ -41,7 +46,8 @@ class DefaultDateTimerPickerHeader extends StatelessWidget {
 
 class _Button extends StatelessWidget {
   final void Function()? onTap;
-  const _Button({this.onTap});
+  final String? text;
+  const _Button({this.onTap, this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +66,7 @@ class _Button extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         child: Center(
           child: Text(
-            'CONFIRM',
+            (text ?? 'confirm').toUpperCase(),
             style: TextStyle(
               color: onPrimary,
               fontWeight: FontWeight.w700,
@@ -81,9 +87,10 @@ class _DateTimePickerController extends ChangeNotifier {
 }
 
 class _Dialog extends StatelessWidget {
+  final String? text;
   final Widget? header;
   final DateTime? initialDateTime;
-  const _Dialog({this.header, this.initialDateTime});
+  const _Dialog({this.text, this.header, this.initialDateTime});
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +114,7 @@ class _Dialog extends StatelessWidget {
               const _Picker(),
               const SizedBox(height: 8),
               Builder(builder: (context) {
-                return _Button(onTap: () => handleTap(context));
+                return _Button(onTap: () => handleTap(context), text: text);
               })
             ],
           ),

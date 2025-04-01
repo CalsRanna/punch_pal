@@ -22,18 +22,23 @@ const PunchSchema = CollectionSchema(
       name: r'date',
       type: IsarType.dateTime,
     ),
-    r'ended_at': PropertySchema(
+    r'day_off_seconds': PropertySchema(
       id: 1,
+      name: r'day_off_seconds',
+      type: IsarType.long,
+    ),
+    r'ended_at': PropertySchema(
+      id: 2,
       name: r'ended_at',
       type: IsarType.dateTime,
     ),
     r'rescheduled': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'rescheduled',
       type: IsarType.bool,
     ),
     r'started_at': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'started_at',
       type: IsarType.dateTime,
     )
@@ -68,9 +73,10 @@ void _punchSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeDateTime(offsets[0], object.date);
-  writer.writeDateTime(offsets[1], object.endedAt);
-  writer.writeBool(offsets[2], object.rescheduled);
-  writer.writeDateTime(offsets[3], object.startedAt);
+  writer.writeLong(offsets[1], object.dayOffSeconds);
+  writer.writeDateTime(offsets[2], object.endedAt);
+  writer.writeBool(offsets[3], object.rescheduled);
+  writer.writeDateTime(offsets[4], object.startedAt);
 }
 
 Punch _punchDeserialize(
@@ -81,10 +87,11 @@ Punch _punchDeserialize(
 ) {
   final object = Punch();
   object.date = reader.readDateTimeOrNull(offsets[0]);
-  object.endedAt = reader.readDateTimeOrNull(offsets[1]);
+  object.dayOffSeconds = reader.readLong(offsets[1]);
+  object.endedAt = reader.readDateTimeOrNull(offsets[2]);
   object.id = id;
-  object.rescheduled = reader.readBool(offsets[2]);
-  object.startedAt = reader.readDateTimeOrNull(offsets[3]);
+  object.rescheduled = reader.readBool(offsets[3]);
+  object.startedAt = reader.readDateTimeOrNull(offsets[4]);
   return object;
 }
 
@@ -98,10 +105,12 @@ P _punchDeserializeProp<P>(
     case 0:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
-      return (reader.readBool(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 3:
+      return (reader.readBool(offset)) as P;
+    case 4:
       return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -257,6 +266,59 @@ extension PunchQueryFilter on QueryBuilder<Punch, Punch, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'date',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dayOffSecondsEqualTo(
+      int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'day_off_seconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dayOffSecondsGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'day_off_seconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dayOffSecondsLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'day_off_seconds',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterFilterCondition> dayOffSecondsBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'day_off_seconds',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -499,6 +561,18 @@ extension PunchQuerySortBy on QueryBuilder<Punch, Punch, QSortBy> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QAfterSortBy> sortByDayOffSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'day_off_seconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterSortBy> sortByDayOffSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'day_off_seconds', Sort.desc);
+    });
+  }
+
   QueryBuilder<Punch, Punch, QAfterSortBy> sortByEndedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'ended_at', Sort.asc);
@@ -546,6 +620,18 @@ extension PunchQuerySortThenBy on QueryBuilder<Punch, Punch, QSortThenBy> {
   QueryBuilder<Punch, Punch, QAfterSortBy> thenByDateDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'date', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterSortBy> thenByDayOffSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'day_off_seconds', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Punch, Punch, QAfterSortBy> thenByDayOffSecondsDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'day_off_seconds', Sort.desc);
     });
   }
 
@@ -605,6 +691,12 @@ extension PunchQueryWhereDistinct on QueryBuilder<Punch, Punch, QDistinct> {
     });
   }
 
+  QueryBuilder<Punch, Punch, QDistinct> distinctByDayOffSeconds() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'day_off_seconds');
+    });
+  }
+
   QueryBuilder<Punch, Punch, QDistinct> distinctByEndedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'ended_at');
@@ -634,6 +726,12 @@ extension PunchQueryProperty on QueryBuilder<Punch, Punch, QQueryProperty> {
   QueryBuilder<Punch, DateTime?, QQueryOperations> dateProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'date');
+    });
+  }
+
+  QueryBuilder<Punch, int, QQueryOperations> dayOffSecondsProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'day_off_seconds');
     });
   }
 

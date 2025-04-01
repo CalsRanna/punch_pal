@@ -64,6 +64,9 @@ class DeviationCalculator {
       duration -= standard;
     }
     if (punch.rescheduled) duration -= standard;
+    if (punch.dayOffSeconds > 0) {
+      duration += Duration(seconds: punch.dayOffSeconds);
+    }
     final fixed = (duration.inMinutes / 60).toStringAsFixed(1);
     return double.parse(fixed);
   }
