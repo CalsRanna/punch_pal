@@ -211,7 +211,7 @@ class _TileState extends State<_Tile> with TickerProviderStateMixin {
                     maxLines: 1,
                     overflow: TextOverflow.clip,
                     style: TextStyle(
-                      color: color.withOpacity(_opacityAnimation.value),
+                      color: color.withValues(alpha: _opacityAnimation.value),
                       decoration: TextDecoration.none,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

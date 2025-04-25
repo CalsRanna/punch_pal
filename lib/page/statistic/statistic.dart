@@ -143,7 +143,7 @@ class _Deviation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textStyle = TextStyle(
-      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
       fontSize: 10,
       fontWeight: FontWeight.w300,
     );

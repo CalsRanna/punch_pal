@@ -57,7 +57,7 @@ class SettingPage extends StatelessWidget {
             );
           }),
           Divider(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             endIndent: 16,
             height: 1,
             indent: 16,
