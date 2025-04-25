@@ -166,16 +166,27 @@ class _Deviation extends StatelessWidget {
   }
 
   String getText() {
-    if (punch.startedAt == null) return '';
-    if (punch.endedAt == null) return 'Still working';
-    final deviation = DeviationCalculator().calculate(punch);
-    final sign = deviation < 0 ? '-' : '+';
-    final formatted = deviation.abs().toStringAsFixed(1);
-    var text = 'Deviate $sign $formatted hours';
-    if (punch.dayOffSeconds <= 0) return '$text.';
-    var dayOff = punch.dayOffSeconds / 60 / 60;
-    final dayOffText = 'day off ${dayOff.toStringAsFixed(1)} hours';
-    return '$text, $dayOffText.';
+    var hasStart = punch.startedAt != null;
+    var hasEnd = punch.endedAt != null;
+    var hasDayOff = punch.dayOffSeconds > 0;
+    var dayOffHours = punch.dayOffSeconds / 60 / 60;
+    if (!hasStart && !hasEnd && !hasDayOff) return '';
+    if (!hasStart && !hasEnd && hasDayOff) {
+      return 'Day off ${dayOffHours.toStringAsFixed(1)} hours';
+    }
+    if (hasStart && !hasEnd) {
+      if (!hasDayOff) return 'Still working';
+      return 'Still working, day off ${dayOffHours.toStringAsFixed(1)} hours';
+    }
+    if (hasStart && hasEnd) {
+      var deviation = DeviationCalculator().calculate(punch);
+      var sign = deviation < 0 ? '-' : '+';
+      var formatted = deviation.abs().toStringAsFixed(1);
+      var deviateText = 'Deviate $sign $formatted hours';
+      if (!hasDayOff) return deviateText;
+      return '$deviateText, day off ${dayOffHours.toStringAsFixed(1)} hours';
+    }
+    return '';
   }
 }
 
